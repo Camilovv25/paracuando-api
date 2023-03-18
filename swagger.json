@@ -1,0 +1,93 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Paracuando API",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "host": "localhost:8000",
+  "basePath": "/api/v1",
+  "tags": [
+    
+    {
+      "name": "Auth"
+    },
+    {
+      "name": "User"
+    },
+    {
+      "name": "Publication types"
+    },
+    {
+      "name": "Publications"
+    },
+    {
+      "name": "Tags"
+    },
+    {
+      "name": "Countries"
+    },
+    {
+      "name": "States"
+    },
+    {
+      "name": "Cities"
+    },
+    {
+      "name": "Roles"
+    }
+  ],
+  "paths": {
+    "/auth/sign-up": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register an user",
+        "description": "El  usuario se registra, automáticamente se crea una asociación de Profiles con el rol de public",
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "schema": {
+            "type":"object",
+            "properties": {
+              "first_name":{"type":"string"},
+              "last_name":{"type":"string"},
+              "email":{"type":"string"},
+              "password":{"type":"string"}
+            }
+          },
+          "required": true
+        }],
+        "responses": {
+          "201": {
+            "description": "User registered"
+            }}
+      }
+    },
+    "/auth/login":{},
+    "/auth/me":{},
+    "/auth/forget-password":{},
+    "/auth/change-password":{},
+    "/users/":{},
+    "/users/:id":{},
+    "/users/:id/votes":{},
+    "/users/:id/publications":{},
+    "/users/:id/add-image":{},
+    "/users/:id/remove-image":{},
+    "/publications-types/":{},
+    "/publications-types/:id":{},
+    "/publications/":{},
+    "/publications/:id":{},
+    "/publications/:id/vote":{},
+    "/publications/:id/add-image":{},
+    "/publications/:id/image-order":{},
+    "/publications/:id/remove-image/:order":{},
+    "/tags/":{},
+    "/tags/:id":{},
+    "/tags/:id/add-image":{},
+    "/countries/":{},
+    "/states/":{},
+    "/cities/":{},
+    "/roles/":{}
+  }
+
+}
