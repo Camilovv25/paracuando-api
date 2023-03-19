@@ -11,6 +11,8 @@ const swaggerDoc = require('./swagger.json')
 const routerModels = require('./routes/models.router')
 const routerErrorHandler = require('./routes/errorhandler.router')
 
+const userRouter = require('./routes/users.router')
+
 
 const app = express()
 const PORT = process.env.PORT || 8000
@@ -47,6 +49,7 @@ Accept Json & form-urlencoded
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 
+
 /* 
     Tell everyone the state of your api
 */
@@ -63,6 +66,7 @@ Routes
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc) )
 routerModels(app)
 routerErrorHandler(app)
+app.use('/api/v1/users', userRouter)
 
 app.listen(PORT, () => {
   console.log(`Server on PORT: ${PORT}`)
