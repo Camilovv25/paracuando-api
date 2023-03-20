@@ -21,11 +21,13 @@ module.exports = {
         },
         createdAt: {
           allowNull: false,
-          type: Sequelize.DATE
+          type: Sequelize.DATE,
+          field: 'created_at'
         },
         updatedAt: {
           allowNull: false,
-          type: Sequelize.DATE
+          type: Sequelize.DATE,
+          field: 'updated_at'
         }
       },{transaction});
       await transaction.commit()
@@ -42,7 +44,7 @@ module.exports = {
       await transaction.commit()
     } catch (error) {
       await transaction.rollback()
-      throw error 
+      throw error                                     
     }
   }
 };

@@ -34,7 +34,11 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'PublicationsTypes',
     tablelName: 'publications_types',
     underscored: true,
-    timestamps: true
+    timestamps: true,
+    scopes:{
+      public_view: {attributes: ['id', 'name', 'description']},
+      no_timestamps: {attributes:{exclude:['created_at','updated_at']}}
+    }
   });
   return PublicationsTypes;
 };
