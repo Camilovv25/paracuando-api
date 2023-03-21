@@ -52,6 +52,7 @@ class UsersService {
       await transaction.commit()
       return newUser
     } catch (error) {
+      console.log(error, 'here err post')
       await transaction.rollback()
       throw error
     }
@@ -173,6 +174,66 @@ class UsersService {
       throw error
     }
   }
+
+
+
+  /*
+  async getVotesByUser(userId, limit, offset) {
+    const { rows: votes, count } = await models.Votes.findAndCountAll({
+      where: { userId },
+      include: [
+        {
+          model: models.Posts,
+          required: true,
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
+    });
+    const pagination = { limit, offset, count };
+    return { votes, pagination };
+  }
+
+  */
+
+  /* 
+  async getPostsByUser(userId, query) {
+    const options = {
+      where: {
+        user_id: userId
+      },
+      include: {
+        model: models.Posts,
+        as: 'posts',
+        where: {},
+        required: true
+      }
+    }
+
+    const { size, limit } = query
+    if (size && limit) {
+      options.include.limit = limit
+      options.include.offset = size * limit
+    }
+
+    const { title, content } = query
+    if (title) {
+      options.include.where.title = { [Op.iLike]: `%${title}%` }
+    }
+
+    if (content) {
+      options.include.where.content = { [Op.iLike]: `%${content}%` }
+    }
+
+    const user = await models.Users.findOne(options)
+    if (!user) throw new CustomError('User not found', 404, 'Not Found')
+    
+    return user.posts
+  }
+*/
+
 }
+
 
 module.exports = UsersService;

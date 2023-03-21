@@ -1,17 +1,25 @@
-const router = require('express').Router()
-const UsersService = require('../services/users.service');
-const usersService = new UsersService();
+const express = require('express');
+const router = express.Router();
+const { getUsers, addUser, getUser, updateUser, removeUser, getVotes, getPost } = require('../controllers/users.controller');
+const { isAdminRole, isTheSameUser, isAdminOrSameUser, isAnyRoleByList, isUserLoggedIn } = require('../middlewares/auth.checkers');
 
-router.route('/')
-  .get(usersService.findAndCount)
-  .post(usersService.createAuthUser);
 
-router.route('/:id')
-  .get(usersService.getUser)
-  .put(usersService.updateUser)
-  .delete(usersService.removeUser);
+router.get('/', isAdminRole, getUsers);
+
+router.get('/:id', isAdminOrSameUser, getUser);
+
+router.put('/:id', isTheSameUser, updateUser);
+
+//router.get('/:id/votes', isUserLoggedIn, getVotes);
+
+//router.get('/:id/publications', isUserLoggedIn, getPost);
+
+
+//router.post('/:id/add-image', updateUser);
+
+
+//router.delete('/:id/remove-image', removeUser);
 
 
 module.exports = router;
-
 

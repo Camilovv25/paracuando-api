@@ -8,10 +8,11 @@ const swaggerUi = require('swagger-ui-express')
 const swaggerDoc = require('./swagger.json')
 
 
-const routerModels = require('./routes/models.router')
+const routerModels = require('./routes/models.router');
+
 const routerErrorHandler = require('./routes/errorhandler.router')
 
-const userRouter = require('./routes/users.router')
+//const userRouter = require('./routes/users.router')
 
 
 const app = express()
@@ -64,9 +65,9 @@ app.get('/', ({ res }) => {
 Routes
 */
 app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc) )
-routerModels(app)
+routerModels(app);
 routerErrorHandler(app)
-app.use('/api/v1/users', userRouter)
+
 
 app.listen(PORT, () => {
   console.log(`Server on PORT: ${PORT}`)
