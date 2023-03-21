@@ -1,5 +1,4 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const { getUsers, addUser, getUser, updateUser, removeUser, getVotes, getPost } = require('../controllers/users.controller');
 const { isAdminRole, isTheSameUser, isAdminOrSameUser, isAnyRoleByList, isUserLoggedIn } = require('../middlewares/auth.checkers');
 

@@ -40,23 +40,26 @@ class UsersService {
   async createAuthUser(obj) {
     const transaction = await models.sequelize.transaction()
     try {
-
       obj.id = uuid4()
       obj.password = hashPassword(obj.password)
       let newUser = await models.Users.create(obj, { transaction, fields: ['id', 'first_name', 'last_name', 'password', 'email', 'username'] })
 
       let publicRole = await models.Roles.findOne({ where: { name: 'public' } }, { raw: true })
+      if (!publicRole) {
+        throw new CustomError('Public role not found', 404, 'Not Found')
+      }
 
       let newUserProfile = await models.Profiles.create({ user_id: newUser.id, role_id: publicRole.id }, { transaction })
 
       await transaction.commit()
       return newUser
     } catch (error) {
-      console.log(error, 'here err post')
+      console.log(`Error creating auth user: ${error.message}`)
       await transaction.rollback()
       throw error
     }
   }
+
 
   async getAuthUserOr404(id) {
     let user = await models.Users.scope('auth_flow').findByPk(id, { raw: true })
