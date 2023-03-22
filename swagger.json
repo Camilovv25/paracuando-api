@@ -42,10 +42,11 @@
       "post": {
         "tags": ["Auth"],
         "summary": "Register an user",
-        "description": "El  usuario se registra, automáticamente se crea una asociación de Profiles con el rol de public",
+        "description": "The user registers, an association of Profiles with the role of public is automatically created",
         "parameters": [{
           "in": "body",
           "name": "body",
+          "description": "User object that needs to be registered",
           "schema": {
             "type":"object",
             "properties": {
@@ -59,14 +60,150 @@
         }],
         "responses": {
           "201": {
-            "description": "User registered"
+            "description": "Succes Sign Up"
             }}
       }
     },
-    "/auth/login":{},
-    "/auth/me":{},
-    "/auth/forget-password":{},
-    "/auth/change-password":{},
+    "/auth/login":{
+      "post":{
+        "tags": ["Auth"],
+        "summary": "Log an user",
+        "description": "The user sends the email and his password to be able to receive a token with which he will make requests based on his ID",
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "schema": {
+            "type":"object",
+            "properties": {
+              "email":{"type":"string"},
+              "password":{"type":"string"}
+            }
+          },
+          "required": true
+        }],
+        "responses": {
+          "200":{
+            "description": "Correct credentials",
+            "schema":{
+              "type":"object",
+              "properties": {
+                "message":{
+                  "type":"string",
+                  "example":"Correct Credentials!"
+                },
+                "token":{
+                  "type": "string"
+                }
+              }
+            }
+          }}
+      }
+    },
+    "/auth/me":{
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get personal profiles",
+        "description": "The user with his token will receive the Profiles associated with his account.",
+        "parameters": [{
+          "in": "header",
+          "name": "bearer token",
+          "type": "string"
+        }],
+        "responses": {
+          "200":{
+            "description": "",
+            "schema":{
+              "type":"object",
+              "properties": {
+                "results":{
+                  "type": "object",
+                  "properties": {
+                    "id":{
+                      "example":"740273ca-b792-4129-a050-2fc01957d94d"
+                    },
+                    "first_name":{"example":"Juana"},
+                    "last_name":{"example":"De Arco"},
+                    "email":{"example":"example@academlo.com"},
+                    "username":{"example":"example@academlo.com"},
+                    "image_url":{"example":null},
+                    "profiles":{
+                      "type":"array",
+                      "example": [
+                        {
+                          "id": "6",
+                          "user_id": "740273ca-b792-4129-a050-2fc01957d94d",
+                          "role_id": 1,
+                          "created_at": "2023-02-09T23:32:03.233Z",
+                          "updated_at": "2023-02-09T23:32:03.233Z"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/forget-password":{
+      "post": {
+        "tags": ["Auth"],
+        "summary": "",
+        "description": "",
+        "parameters": [{
+          "in": "body",
+          "name": "email",
+          "schema": {
+            "type":"object",
+            "properties": {"email":{"type":"string"}}
+          }
+        }],
+        "responses": {
+          "200":{
+            "description": "",
+            "schema":{
+              "type":"object",
+              "properties": {
+                "message":{
+                  "example": "Email sended!, check your inbox"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/change-password":{
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Change password",
+        "description": "The token is sent along with the password for the password change to take place",
+        "parameters": [{
+          "in": "body",
+          "name": "password",
+          "schema": {
+            "type": "object",
+            "properties": {
+              "password":{"type":"string"}
+            }
+          }
+        }],
+        "responses": {
+          "200":{
+            "description": "",
+            "schema":{
+              "type":"object",
+              "properties": {
+                "message":{
+                  "example": "Succes Update"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/":{},
     "/users/:id":{},
     "/users/:id/votes":{},
