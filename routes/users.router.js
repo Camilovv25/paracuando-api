@@ -1,6 +1,7 @@
 const router = require('express').Router();
-const { getUsers, addUser, getUser, updateUser, removeUser, getVotes, getPost } = require('../controllers/users.controller');
+const { getUsers, addUser, getUser, updateUser, removeUser} = require('../controllers/users.controller');
 const { isAdminRole, isTheSameUser, isAdminOrSameUser, isAnyRoleByList, isUserLoggedIn } = require('../middlewares/auth.checkers');
+
 
 
 router.get('/', isAdminRole, getUsers);

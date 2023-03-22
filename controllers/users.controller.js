@@ -8,7 +8,7 @@ const getUsers = async (req, res, next) => {
     const { page = 1, size = 10 } = req.query;
 
     const { limit, offset } = getPagination(page, size);
-
+    
     const users = await usersService.findAndCount({ limit, offset });
 
     const results = getPagingData(users, page, limit);
@@ -33,7 +33,7 @@ const addUser = async (request, response, next) => {
 const getUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const user = await usersService.getUserOr404(id);
+    const user = await usersService.getUser(id);
     return res.json({ results: user });
   } catch (error) {
     next(error);

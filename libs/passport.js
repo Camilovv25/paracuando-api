@@ -24,9 +24,14 @@ passport.use(
         }
       })
       .catch((err) => {
-        return done(err, false)
+        if (err.name === 'JsonWebTokenError') {
+          return done(null, false, { message: 'Token inválido' })
+        } else {
+          return done(err, false)
+        }
       })
   })
 )
+
 
 module.exports = passport
