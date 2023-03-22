@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
       Profiles.belongsTo(models.Roles, { as: 'role', foreignKey: 'role_id' })
     }
   }
+  
   Profiles.init({
     id: {
       type: DataTypes.BIGINT,

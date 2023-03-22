@@ -1,16 +1,46 @@
-const passport = require('../libs/passport')
+const profiles = require('../database/models/profiles');
+const roles = require('../database/models/roles');
 
-function isAdminRole(req, res, next) {
-  passport.authenticate('jwt', { session: false }, (err, user) => {
-    if (err || !user || user.role !== 'admin') {
-      console.log('Error de autenticación: Usuario no es administrador');
-      res.status(401).send('Usuario no autorizado para realizar esta acción');
-    } else {
-      req.user = user;
-      next();
+async function isAdminRole(req, res, next) {
+  const userId = req.user && req.user.id; // Obtener el ID del usuario de la petición
+  if (!userId) {
+    console.log('Error de autenticación: Usuario no autenticado');
+    return res.status(401).send('Usuario no autorizado para realizar esta acción');
+  }
+  console.log('ID de usuario:', userId);
+
+  try {
+    // Buscar el usuario en la tabla "profiles" utilizando su "user_id"
+    const userProfile = await profiles.findOne({
+      where: { user_id: userId },
+      attributes: ['role_id'],
+    });
+
+    if (!userProfile || !userProfile.role_id) {
+      console.log('Error de autenticación: El usuario no tiene un rol asignado');
+      return res.status(401).send('Usuario no autorizado para realizar esta acción');
     }
-  })(req, res, next);
+
+    // Obtener el nombre del rol correspondiente en la tabla "roles"
+    const userRole = await roles.findOne({
+      where: { id: userProfile.role_id },
+      attributes: ['name'],
+    });
+
+    if (!userRole || userRole.name !== 'admin') {
+      console.log('Error de autenticación: Usuario no es administrador');
+      return res.status(401).send('Usuario no autorizado para realizar esta acción');
+    }
+
+    return next(); 
+  } catch (error) {
+    console.log('Error de autenticación: No se pudo obtener el perfil del usuario');
+    console.log(error.stack);
+    return res.status(401).send('Usuario no autorizado para realizar esta acción');
+  }
 }
+
+
 
 
 function isTheSameUser(req, res, next) {
