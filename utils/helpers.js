@@ -62,5 +62,5 @@ const getPagingData = (data, page, limit) => {
 module.exports = {
   CustomError,
   getPagination,
-  getPagingData
+  getPagingData,
 };
