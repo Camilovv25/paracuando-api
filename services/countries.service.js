@@ -38,9 +38,7 @@ class CountriesService {
   async createCountry({name}) {
     const transaction = await models.sequelize.transaction()
     try {
-      let newCountry = await models.Countries.create({
-        name
-      }, { transaction })
+      let newCountry = await models.Countries.create({name}, { transaction })
 
       await transaction.commit()
       return newCountry
