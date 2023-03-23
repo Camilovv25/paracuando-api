@@ -8,7 +8,7 @@ const routesPublicationsTypes = require('./publicationsTypes.routes');
 const routesCountries = require ( './countries.routes');
 const routesTags = require('./tags.routes');
 const routesStates = require('./states.routes');
-
+const routesCities = require('./cities.routes');
 // const isAuthenticatedByPassportJwt = require('../libs/passport')
 
 function routerModels(app) {
@@ -19,6 +19,7 @@ function routerModels(app) {
   router.use('/countries', routesCountries);
   router.use('/tags', routesTags);
   router.use('/states', routesStates);
+  router.use('/cities', routesCities);
 
   router.use('/users',passport.authenticate('jwt', { session: false }), routesUsers);
 
