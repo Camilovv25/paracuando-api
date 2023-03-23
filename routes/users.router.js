@@ -1,12 +1,12 @@
 const router = require('express').Router();
 const { getUsers, getUser, updateUser} = require('../controllers/users.controller');
-const { isAdminRole, isTheSameUser, isAdminOrSameUser} = require('../middlewares/auth.checkers');
+const { isAdminRole, isTheSameUser, isAdminOrSameUserOrAnyUser} = require('../middlewares/auth.checkers');
 
 
 
 router.get('/', isAdminRole, getUsers);
 
-router.get('/:id', isAdminOrSameUser, getUser);
+router.get('/:id', isAdminOrSameUserOrAnyUser, getUser);
 
 router.put('/:id', isTheSameUser, updateUser);
 

@@ -2,6 +2,7 @@ const models = require('../database/models')
 const UsersService = require('../services/users.service');
 const { comparePassword } = require('../libs/bcrypt');
 const jwt = require('jsonwebtoken');
+
 const { CustomError } = require('../utils/helpers');
 
 const usersService = new UsersService();
@@ -60,13 +61,34 @@ class AuthService {
       if (!user) {
         throw new Error('Usuario no encontrado');
       }
-      
+
       return user;
     } catch (error) {
       console.log('Error al obtener el usuario autenticado:', error);
       throw error;
     }
   }
+
+
+  async getAuthenticatedUserFromRequest(req) {
+    const userId = req.user.id;
+    try {
+      const user = await models.Users.findOne({
+        where: { id: userId },
+        include: [{ model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] }]
+      });
+
+      if (!user) {
+        throw new Error('Usuario no encontrado');
+      }
+
+      return user;
+    } catch (error) {
+      console.log('Error al obtener el usuario autenticado:', error);
+      throw error;
+    }
+  }
+
 }
 
 module.exports = AuthService;
