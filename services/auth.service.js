@@ -1,6 +1,5 @@
 const models = require('../database/models')
 const UsersService = require('../services/users.service');
-
 const { comparePassword } = require('../libs/bcrypt');
 const jwt = require('jsonwebtoken');
 const { CustomError } = require('../utils/helpers');
@@ -8,7 +7,7 @@ const { CustomError } = require('../utils/helpers');
 const usersService = new UsersService();
 
 class AuthService {
-  constructor() {}
+  constructor() { }
 
   async checkUsersCredentials(email, password) {
     let user = await usersService.findUserByEmailOr404(email);
@@ -38,16 +37,35 @@ class AuthService {
   async userToken(id) {
     let user = await models.Users.scope('view_me').findOne(
       {
-        where: {id},
+        where: { id },
         include: [{
           model: models.Profiles,
           as: 'profiles'
         }]
-      },   
+      },
       { raw: true }
     )
     if (!user) throw new CustomError('Not found User', 404, 'Not Found')
     return user
+  }
+
+
+  async getAuthenticatedUser(id) {
+    try {
+      const user = await models.Users.findOne({
+        where: { id },
+        include: [{ model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] }]
+      });
+
+      if (!user) {
+        throw new Error('Usuario no encontrado');
+      }
+      
+      return user;
+    } catch (error) {
+      console.log('Error al obtener el usuario autenticado:', error);
+      throw error;
+    }
   }
 }
 

@@ -1,5 +1,12 @@
+const { Op } = require('sequelize');
+const users = require('../database/models/users');
 const profiles = require('../database/models/profiles');
 const roles = require('../database/models/roles');
+
+const AuthService = require('../services/auth.service');
+
+const authService = new AuthService();
+
 
 async function isAdminRole(req, res, next) {
   const userId = req.user && req.user.id; // Obtener el ID del usuario de la petición
@@ -7,40 +14,17 @@ async function isAdminRole(req, res, next) {
     console.log('Error de autenticación: Usuario no autenticado');
     return res.status(401).send('Usuario no autorizado para realizar esta acción');
   }
-  console.log('ID de usuario:', userId);
 
   try {
-    // Buscar el usuario en la tabla "profiles" utilizando su "user_id"
-    const userProfile = await profiles.findOne({
-      where: { user_id: userId },
-      attributes: ['role_id'],
-    });
-
-    if (!userProfile || !userProfile.role_id) {
-      console.log('Error de autenticación: El usuario no tiene un rol asignado');
-      return res.status(401).send('Usuario no autorizado para realizar esta acción');
-    }
-
-    // Obtener el nombre del rol correspondiente en la tabla "roles"
-    const userRole = await roles.findOne({
-      where: { id: userProfile.role_id },
-      attributes: ['name'],
-    });
-
-    if (!userRole || userRole.name !== 'admin') {
-      console.log('Error de autenticación: Usuario no es administrador');
-      return res.status(401).send('Usuario no autorizado para realizar esta acción');
-    }
-
-    return next(); 
+    const user = await authService.getAuthenticatedUser(userId);
+    req.user = user; // Agregar el usuario encontrado a la petición
+    return next();
   } catch (error) {
-    console.log('Error de autenticación: No se pudo obtener el perfil del usuario');
+    console.log('Error de autenticación: No se pudo obtener el usuario');
     console.log(error.stack);
     return res.status(401).send('Usuario no autorizado para realizar esta acción');
   }
 }
-
-
 
 
 function isTheSameUser(req, res, next) {
@@ -88,7 +72,6 @@ function isUserLoggedIn(req, res, next) {
     res.status(401).send('Usuario no autorizado para realizar esta acción');
   }
 }
-
 
 
 module.exports = {

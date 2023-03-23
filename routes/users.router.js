@@ -1,6 +1,6 @@
 const router = require('express').Router();
-const { getUsers, addUser, getUser, updateUser, removeUser} = require('../controllers/users.controller');
-const { isAdminRole, isTheSameUser, isAdminOrSameUser, isAnyRoleByList, isUserLoggedIn } = require('../middlewares/auth.checkers');
+const { getUsers, getUser, updateUser} = require('../controllers/users.controller');
+const { isAdminRole, isTheSameUser, isAdminOrSameUser} = require('../middlewares/auth.checkers');
 
 
 
@@ -10,9 +10,9 @@ router.get('/:id', isAdminOrSameUser, getUser);
 
 router.put('/:id', isTheSameUser, updateUser);
 
-//router.get('/:id/votes', isUserLoggedIn, getVotes);
+//router.get('/:id/votes', getVotes);
 
-//router.get('/:id/publications', isUserLoggedIn, getPost);
+//router.get('/:id/publications', getPost);
 
 
 //router.post('/:id/add-image', updateUser);
