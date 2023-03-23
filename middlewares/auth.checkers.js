@@ -105,6 +105,8 @@ function isTheSameUser(req, res, next) {
     req.user = {
       first_name: req.body.first_name,
       last_name: req.body.last_name,
+      country_id: req.body.country_id,
+      code_phone: req.body.code_phone,
       phone: req.body.phone
     };
 
