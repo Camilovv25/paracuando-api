@@ -84,12 +84,10 @@ class StatesService {
   }
 
   async findStateByName(name) {
-    let state = await models.States.findOne({ where: { name } }, { raw: true })
-    return state
+    const state = await models.States.findOne({ where: { name } });
+    if (!state) throw new CustomError('State not found', 404, 'Not Found');
+    return state;
   }
-
-
-
 
 }
 

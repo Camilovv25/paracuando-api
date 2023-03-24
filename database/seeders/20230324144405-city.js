@@ -2,6 +2,7 @@
 const { Op } = require('sequelize');
 const statesServices = require('../../services/states.service');
 const statesService = new statesServices();
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
@@ -9,6 +10,7 @@ module.exports = {
       const state1 = await statesService.findStateByName('Campeche');
       const state2 = await statesService.findStateByName('Chihuahua');
       const state3 = await statesService.findStateByName('Chiapas');
+
       const cities = [
         {
           id: '1',
@@ -33,14 +35,15 @@ module.exports = {
         }
       ]
       await queryInterface.bulkInsert('Cities', cities, { transaction })
-      await transaction.commit()
+      await transaction.commit();
     } catch (error) {
-      await transaction.rollback()
+      console.log(error.stack)
+      await transaction.rollback();
       throw error
     }
   },
   async down(queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction()
+    const transaction = await queryInterface.sequelize.transaction();
     try {
       const state1 = await statesService.findStateByName('Campeche');
       const state2 = await statesService.findStateByName('Chihuahua');
@@ -64,9 +67,9 @@ module.exports = {
           }
         ]
       }, { transaction })
-      await transaction.commit()
+      await transaction.commit();
     } catch (error) {
-      await transaction.rollback()
+      await transaction.rollback();
       throw error
     }
   }
