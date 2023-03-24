@@ -1,9 +1,9 @@
-const models = require ('../database/models');
-const {Op} = require('sequelize');
-const {CustomError} = require ( '../utils/helpers')
+const models = require('../database/models');
+const { Op } = require('sequelize');
+const { CustomError } = require('../utils/helpers')
 
 class StatesService {
-  constructor (){}
+  constructor() { }
 
   async findAndCount(query) {
     const options = {
@@ -42,7 +42,7 @@ class StatesService {
       throw error
     }
   }
-  
+
   async getStateOr404(id) {
     let state = await models.States.findByPk(id, { raw: true })
     if (!state) throw new CustomError('Not found State', 404, 'Not Found')
@@ -82,6 +82,14 @@ class StatesService {
       throw error
     }
   }
+
+  async findStateByName(name) {
+    let state = await models.States.findOne({ where: { name } }, { raw: true })
+    return state
+  }
+
+
+
 
 }
 

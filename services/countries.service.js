@@ -97,6 +97,12 @@ class CountriesService {
     }
   }
 
+  async findCountryByName(name) {
+    let country = await models.Countries.findOne({ where: { name } }, { raw: true })
+    return country
+  }
+
+
 }
 
 module.exports = CountriesService
