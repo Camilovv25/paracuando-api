@@ -4,9 +4,7 @@ const helmet = require('helmet')
 require('dotenv').config()
 
 //swagger
-const swaggerUi = require('swagger-ui-express')
-const swaggerDoc = require('./swagger.json')
-
+const documentation = require('./routes/docs.router')
 
 const routerModels = require('./routes/models.router');
 
@@ -64,7 +62,8 @@ app.get('/', ({ res }) => {
 /*
 Routes
 */
-app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc) )
+//app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc) )
+documentation(app)
 routerModels(app);
 routerErrorHandler(app)
 
