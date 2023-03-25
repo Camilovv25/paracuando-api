@@ -1,0 +1,908 @@
+openapi: 3.0.1
+info:
+  title: Para Cuando API
+  description: ""
+  version: 1.0.0
+servers:
+- url: http://localhost:8000/api/v1
+tags:
+- name: Auth
+- name: User
+- name: Publications types
+- name: Publications
+- name: Tags
+- name: Countries
+- name: States
+- name: Cities
+- name: Roles
+paths:
+  /auth/sign-up:
+    post:
+      tags:
+      - Auth
+      summary: Register an user
+      description: The user registers, an association of Profiles with the role of
+        public is automatically created
+      requestBody:
+        description: User object that needs to be registered
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+        required: true
+      responses:
+        201:
+          description: Succes Sign Up
+          content: {}
+      x-codegen-request-body-name: body
+  /auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Log an user
+      description: The user sends the email and his password to be able to receive
+        a token with which he will make requests based on his ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+        required: true
+      responses:
+        200:
+          description: Correct credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Correct Credentials!
+                  token:
+                    type: string
+      x-codegen-request-body-name: body
+  /auth/me:
+    get:
+      tags:
+      - Auth
+      summary: Get personal profiles
+      description: The user with his token will receive the Profiles associated with
+        his account.
+      parameters:
+      - name: bearer token
+        in: header
+        schema:
+          type: string
+      responses:
+        200:
+          description: ""
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: object
+                    properties:
+                      id:
+                        type: object
+                        example: 740273ca-b792-4129-a050-2fc01957d94d
+                      first_name:
+                        type: object
+                        example: Juana
+                      last_name:
+                        type: object
+                        example: De Arco
+                      email:
+                        type: object
+                        example: example@academlo.com
+                      username:
+                        type: object
+                        example: example@academlo.com
+                      image_url:
+                        type: object
+                        example: null
+                      profiles:
+                        type: array
+                        items: 
+                          type: string
+      security: 
+        - BearerAuth: []
+  /auth/forget-password:
+    post:
+      tags:
+      - Auth
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+        required: false
+      responses:
+        200:
+          description: ""
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: Email sended!, check your inbox
+      x-codegen-request-body-name: email
+  /auth/change-password:
+    post:
+      tags:
+      - Auth
+      summary: Change password
+      description: The token is sent along with the password for the password change
+        to take place
+      requestBody:
+        content:
+          '*/*':
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+        required: false
+      responses:
+        200:
+          description: ""
+          content:
+            '*/*':
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: object
+                    example: Succes Update
+      x-codegen-request-body-name: password
+  /users/:
+    get: 
+      tags: 
+        - User
+      summary: Devuelve todos los usuarios 
+      description: Solo para usuarios que sean administradores. Los usuarios son devueltos de manera paginada, ademas, se podrá filtrar la busqueda ingresando los parametros mediante query params
+      parameters:
+        - $ref: '#/components/parameters/first_name'
+        - $ref: '#/components/parameters/last_name'
+        - $ref: '#/components/parameters/email'
+        - $ref: '#/components/parameters/username'
+        - $ref: '#/components/parameters/email_verified'
+        - $ref: '#/components/parameters/country_id'
+        - $ref: '#/components/parameters/code_phone'
+        - $ref: '#/components/parameters/phone'
+        - $ref: '#/components/parameters/created_at'
+      responses:
+        200:
+          description: Devuelve usuarios de manera paginaada
+      security: 
+        - BearerAuth: []
+  /users/{id}:
+    get:
+      tags: 
+        - User
+      summary: Devuelve un usuario
+      description: Se verá la información pública de un usuario, si el usuario mira su propio perfil, podrá ver campos adicionales. 
+      parameters: 
+        - $ref: '#/components/parameters/id'
+      responses: 
+        200:
+          description: Devuelve un objeto con informacion de usuario
+          content:
+            application/json:
+              schema:
+                oneOf: 
+                  - $ref: '#/components/schemas/userPublic'
+                  - $ref: '#/components/schemas/userAdmin'
+      security: 
+        - BearerAuth: []
+    put: 
+      tags: 
+        - User
+      summary: Editar usuario propio
+      description: Realizar cambios en el propio perfil del usuario
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        description: campos a editar
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/editUSer'
+      responses:
+        200:
+          description: Usuario actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/updated'
+      security: 
+        - BearerAuth: []
+  /users/{id}}/votes: 
+    get:
+      tags: 
+        - User
+        
+      summary: Votos hechos por los usuarios
+      
+      description: Devuelve las publicaciones donde el usuario haya votado. Se podrá paginar por medio de query params. Requiere login
+      
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/page'
+        
+      responses:
+        
+        200: 
+          description: Publicaciones donde el usuario haya votado 
+      security: 
+        - BearerAuth: []
+  /users/{id}}/publications: 
+    get:
+      tags: 
+        - User
+        
+      summary: Publicaciones hechas por los usuarios
+      
+      description: Devuelve las publicaciones hechas por el usuario. Se podrá paginar por medio de query params. Requiere login
+      
+      parameters:
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/page'
+        
+      responses:
+        
+        200: 
+          description: Publicaciones hechas por el usuario
+      security: 
+        - BearerAuth: []
+  /users/{id}/add-image: 
+    post:
+      tags: 
+        - User
+      summary: Añadir imagen de usuario
+      description: Recibe la imagen
+      parameters: 
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image: 
+                  type: string
+      responses:
+        201: 
+          description: Imagen agregada
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/imageAdded'
+      security: 
+        - BearerAuth: []
+  /users/{id}/remove-image: 
+    delete:
+      tags: 
+        - User
+      summary: Eliminar imagen de usuario
+      description: Recibe la peticion de eliminar imagen
+      parameters: 
+        - $ref: '#/components/parameters/id'
+
+      responses:
+        200: 
+          description: Imagen agregada
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/imageRemoved'
+        404: 
+          description: Not found 
+      security: 
+        - BearerAuth: []
+  /publications-types/: 
+    get: 
+      tags:
+        - Publications types
+      summary: Devuelve los tipos de publicaciones 
+      description: Las tipos de publicaciones son devueltos en vista paginada y se puede filtrar la búsqueda según los campos del modelo por medio de query params
+      parameters: 
+        - name: name
+          in: query
+          description: Nombre del tipo de publicación 
+          schema:
+            type: string
+        - name: description 
+          in: query
+          description: Descripción del tipo de publicación 
+          schema:
+            type: string
+        - name: page 
+          in: query
+          description: En qué página mostrar 
+          schema:
+            type: string
+        - name: size 
+          in: query
+          description: Cantidad de tipos de publicaciónes a mostrar 
+          schema:
+            type: string
+      responses:
+        200: 
+          description: Vista paginada
+      security: 
+        - BearerAuth: []
+  /publications-types/{id}: 
+    get: 
+      tags:
+        - Publications types
+      summary:  Encuentra tipo de publicación por id 
+      description: Requiere login 
+      parameters: 
+        - $ref: '#/components/parameters/id'
+      responses:
+        200:
+          description: Vista detallada del tipo de publicación
+      security: 
+        - BearerAuth: []
+    put: 
+      tags: 
+        - Publications types
+      summary: Editar los campos existentes de tipos de publicación
+      description: Debe ser administrador para realizar esta acción
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        description: Campos a editar 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties:
+                name: 
+                  type: string
+                description: 
+                  type: string 
+        required: true
+      responses:
+        200:
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/updated'
+  /publications/: 
+    get: 
+      tags:
+        - Publications
+      summary:  Devuelve publicaciones 
+      description: Publicaciones con vista paginada. Se podrá filtrar la búsqueda por los campos de Publications
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - name: publications_types_id
+          in: query
+          description: Se podrá filñtrar por este campo
+          schema:
+            type: string
+        - name: title
+          in: query
+          description: Se podrá filñtrar por este campo
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: Se podrá filñtrar por este campo
+          schema:
+            type: string
+        - name: content
+          in: query
+          description: Se podrá filñtrar por este campo
+          schema:
+            type: string
+        - name: reference_link
+          in: query
+          description: Se podrá filñtrar por este campo
+          schema:
+            type: string
+        - name: created_at
+          in: query
+          description: Se podrá filñtrar por este campo
+          schema:
+            type: string
+        - name: tags
+          in: query
+          description: Se podrá filñtrar por esta relacion, los id de los tags separados por coma
+          schema:
+            type: string
+        - name: votes_count
+          in: query
+          description: Se podrá filñtrar por este cálculo del esquema. | Se enviará operator = (gte,lte, lt, gt, eq) y valor que es un integer separado por una coma
+          schema:
+            type: string
+      responses:
+        200:
+          description: Vista paginada de los resultados 
+    post:
+      tags: 
+        - Publications
+      summary: Añadir una publicación
+      description: Solo un usuario logueado podrá añadir una publicación
+      requestBody:
+        content:
+          aplication/json:
+            schema:
+              type: object
+              properties:
+                title: 
+                  type: string
+                description: 
+                  type: string
+                content: 
+                  type: string
+                reference_link: 
+                  type: string
+                publication_type_id: 
+                  type: string
+                tags: 
+                  type: string
+      responses:
+        201: 
+          description: Retorna el objeto creado
+      security: 
+        - BearerAuth: []
+  /publications/{id}: 
+    get: 
+      tags:
+        - Publications
+      summary:  Encuentra publicacion por id de la publicación
+      description: Devuleve información de la publicación
+      parameters: 
+        - $ref: '#/components/parameters/id'
+      responses:
+        200:
+          description: Publicación encontrada
+    delete:
+      tags: 
+        - Publications
+      summary: Eliminar publicación
+      description: Solo un admin o el creador de la publicación puede eliminarla
+      parameters: 
+        - $ref: '#/components/parameters/id'
+      responses:
+        200: 
+          description: Publiacación removida
+      security: 
+        - BearerAuth: []
+  /publications/{id}}/vote: 
+    post:
+      tags: 
+        - Publications
+      summary: Añade o remueve voto por id
+      description: Solo usuario logueado puede realizar esta operación. Si ya hay voto lo borra y si no hay voto lo agrega
+      parameters: 
+        - $ref: '#/components/parameters/id'
+      responses:
+        200: 
+          description: Operación exitosa
+        201: 
+          description: Operación exitosa
+      security: 
+        - BearerAuth: []
+  /publications/{id}}/add-image: 
+    post:
+      tags: 
+        - Publications
+      summary: Añade imagen a la publicación 
+      description: Añade un máximo de 3 imágenes a la publicación. El orden se llena de acuerdo a los espacios vacíos automáticamente. Solo un usuario logueado o un administrador pueden realizar esta acción.
+      parameters: 
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                images: 
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201: 
+          description: operación exitosa
+      security: 
+        - BearerAuth: []
+  /publications/{id}/remove-image/{order}: 
+    delete:
+      tags: 
+        - Publications
+      summary: Elimina una imagen 
+      description: Solo el admin o el dueño de la publicación pueden realizar esta acción. La imagen se identifica con su Order
+      parameters: 
+        - $ref: '#/components/parameters/id'
+        - $ref: '#/components/parameters/order'
+        
+      responses:
+        200: 
+          description: Operación exitosa
+      security: 
+        - BearerAuth: []
+  /tags/: 
+    get: 
+      tags:
+        - Tags
+      summary:  Obtener los tags
+      description: Devuelve los tags. Solo usuario logueado puede hacer la peticíon
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/name'
+        - $ref: '#/components/parameters/description'
+      responses:
+        200:
+          description: Vista paginada 
+      security: 
+        - BearerAuth: []
+    post:
+      tags: 
+        - Tags
+      summary: Añadir un tag
+      description: Solo un admin puede crear tags
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        201: 
+          description: El objeto creado
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Tag Added
+  /tags/{id}: 
+    get: 
+      tags:
+        - Tags
+      summary:  Buscar tag por su id
+      description: Devuelve información del tag. Solo usuario logueado puede realizar esta acción.
+      parameters: 
+         - $ref: '#/components/parameters/id'
+      responses:
+        200:
+          description: Operación exitosa 
+      security: 
+        - BearerAuth: []
+    put: 
+      tags: 
+        - Tags
+      summary: Editar tag
+      description: Solo un admin puede editar tags
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        description: Campos de tags a editar
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties:
+                name: 
+                  type: string
+                description:
+                  type: string
+              
+      responses:
+        200:
+          description: Operación exitosa
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/updated'
+    delete:
+      tags: 
+        - Tags
+      summary: Elimiar tag por id 
+      description: Solo un admin puede eliminar tags
+      parameters: 
+        - $ref: '#/components/parameters/id'
+      responses:
+        200: 
+          description: Operación exitosa
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Tag Removed
+        404: 
+          description: Not found 
+  /tags/{id}/add-image: 
+    post:
+      tags: 
+        - Tags
+      summary: Añadir imagen a tag
+      description: El usuario mandará una imagen que se guardará en el servicio elegido (aws, firebase...)
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image: 
+                  type: string
+      responses:
+        201: 
+          description: Imagen añadida
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/imageAdded'
+  /countries/:
+    get: 
+      tags:
+        - Countries
+      summary:  Obtener paises 
+      description: Devuelve los paises con vista paginada. Solo usuario logueado puede realizar esta acción
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/name'
+      responses:
+        200:
+          description: Vista paginada
+      security: 
+        - BearerAuth: []
+  /states/: 
+    get: 
+      tags:
+        - States
+      summary:  Obtener estados 
+      description: Devuelve los estados con vista paginada. Solo usuario logueado puede realizar esta acción
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/name'
+      responses:
+        200:
+          description: Vista paginada
+      security: 
+        - BearerAuth: []
+  /cities/: 
+    get: 
+      tags:
+        - Cities
+      summary:  Obtener ciudades 
+      description: Devuelve las ciudades con vista paginada. Solo usuario logueado puede realizar esta acción
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/name'
+      responses:
+        200:
+          description: Vista paginada
+      security: 
+        - BearerAuth: []
+  /roles/: 
+    get: 
+      tags:
+        - roles
+      summary:  Obtener los roles 
+      description: Devuelve los roles con vista paginada. Solo usuario logueado puede realizar esta acción
+      parameters: 
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/size'
+        - $ref: '#/components/parameters/name'
+      responses:
+        200:
+          description: Vista paginada
+      security: 
+        - BearerAuth: []
+components:
+  schemas:
+    updated:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Succes Update'
+    editUSer:
+      type: object
+      properties: 
+        first_name:
+          type: string
+        last_name:
+          type: string
+        country_id: 
+          type: string
+        code_phone:
+          type: string
+        phone: 
+          type: string
+        interest:
+          type: string
+    imageRemoved:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Image Removed'
+    imageAdded:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Image Added'
+    userPublic:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        image_url:
+          type: string
+        interest:
+          type: string
+    userAdmin:
+      type: object
+      properties: 
+        id:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        email:
+          type: string
+        username: 
+          type: string
+        email_verified:
+          type: string
+        country_id: 
+          type: string
+        code_phone:
+          type: string
+        phone: 
+          type: string
+        image_url:
+          type: string
+        interest:
+          type: string
+  parameters:
+    id:
+      name: id
+      in: path
+      description: id 
+      required: true
+      schema:
+        type: string
+    order:
+      name: order
+      in: path
+      description: order
+      required: true
+      schema:
+        type: string
+    first_name:
+      name: first_name
+      in: query
+      description: primer nombre del usuario
+      schema:
+        type: string
+    last_name:
+      name: last_name
+      in: query
+      description: Apellido del usuario
+      schema:
+        type: string
+    email:
+      name: email
+      in: query
+      description: email del usuario
+      schema:
+        type: string
+    name:
+      name: name
+      in: query
+      description: Filtrado por nombre
+      schema:
+        type: string
+    description:
+      name: description
+      in: query
+      description: Filtrado por descripción
+      schema:
+        type: string
+    username:
+      name: usernamee
+      in: query
+      description: filtrado por username
+      schema:
+        type: string
+    email_verified:
+      name: email_verified
+      in: query
+      description: filtrado por email_verified
+      schema:
+        type: string
+    country_id:
+      name: country_id
+      in: query
+      description: filtrado por id de ciudad
+      schema:
+        type: string
+    code_phone:
+      name: code_phonee
+      in: query
+      description: filtrado por code_phone
+      schema:
+        type: string
+    phone:
+      name: phone
+      in: query
+      description: filtrado por número de teléfono
+      schema:
+        type: string
+    created_at:
+      name: created_at
+      in: query
+      description: filtrado por fecha de creación
+      schema:
+        type: string
+    size:
+      name: size
+      in: query
+      description: Cantidad de resultados a devolver
+      schema:
+        type: string
+    page: 
+      name: page
+      in: query
+      description: En qué página habrá que mostrar
+      schema: 
+        type: string
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  
+      
