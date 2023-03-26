@@ -23,7 +23,7 @@ module.exports = {
           onUpdate: 'CASCADE',
           onDelete: 'CASCADE'
         },
-        user_ud: {
+        user_id: {
           type: Sequelize.UUID,
           allowNull: false,
           primaryKey: true,

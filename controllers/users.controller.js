@@ -61,33 +61,25 @@ const removeUser = async (req, res, next) => {
 };
 
 
-
-/*
-const getVotes = async (req, res, next) => {
+const getVotesByUser = async (req, res, next) => {
   try {
-    const { limit = 10, offset = 0 } = req.query;
-    const { id: userId } = req.user;
-    const votes = await usersService.getVotesByUser(userId, limit, offset);
-    res.status(200).json(votes);
+    const { userId } = req.params;
+    const { page = 1, size = 10 } = req.query;
+    const { limit, offset } = getPagination(page, size);
+    const { votes, pagination } = await usersService.findVotesByUser(
+      userId,
+      limit,
+      offset
+    );
+    const results = {
+      data: votes,
+      pagination: getPagingData(pagination, page, limit),
+    };
+    return res.json(results);
   } catch (error) {
     next(error);
   }
 };
-*/
-
-
-/*
-const getPost = async (req, res, next) => {
-  try {
-    const userId = req.params.id
-    const query = req.query
-    const posts = await usersService.getPostsByUser(userId, query)
-    res.status(200).json(posts)
-  } catch (error) {
-    next(error);
-  }
-};
-*/
 
 
 
@@ -96,5 +88,6 @@ module.exports = {
   addUser,
   getUser,
   updateUser,
-  removeUser
+  removeUser,
+  getVotesByUser
 };

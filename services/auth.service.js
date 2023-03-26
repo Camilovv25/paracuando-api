@@ -52,42 +52,29 @@ class AuthService {
 
 
   async getAuthenticatedUser(id) {
-    try {
-      const user = await models.Users.findOne({
-        where: { id },
-        include: [{ model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] }]
-      });
-
-      if (!user) {
-        throw new Error('Usuario no encontrado');
-      }
-
-      return user;
-    } catch (error) {
-      console.log('Error al obtener el usuario autenticado:', error);
-      throw error;
-    }
+    const user = await models.Users.findOne({
+      where: { id },
+      include: [
+        { model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] }
+      ]
+    });
+    if (!user) throw new CustomError('User not found', 404, 'NotFound');
+    return user;
   }
 
 
   async getAuthenticatedUserFromRequest(req) {
     const userId = req.user.id;
-    try {
-      const user = await models.Users.findOne({
-        where: { id: userId },
-        include: [{ model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] }]
-      });
+    const user = await models.Users.findOne({
+      where: { id: userId },
+      include: [{ model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] }]
+    });
 
-      if (!user) {
-        throw new Error('Usuario no encontrado');
-      }
+    if (!user) throw new CustomError('User not found', 404, 'NotFound');
 
-      return user;
-    } catch (error) {
-      console.log('Error al obtener el usuario autenticado:', error);
-      throw error;
-    }
+    return user;
   }
+
 
 }
 

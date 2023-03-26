@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       PublicationsTags.belongsTo(models.Tags, {as: 'tag', foreignKey: 'tag_id'});
-      PublicationsTags.belongsTo(models.Publications, {as: 'publication', foreignKey: 'publicaton_id'});
+      PublicationsTags.belongsTo(models.Publications, {as: 'publication', foreignKey: 'publication_id'});
     }
   }
   PublicationsTags.init({
@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'PublicationsTags',
-    tableName: 'publications_tags',
+    tableName: 'PublicationsTags',
     underscored: true,
     timestamps: true
   });
