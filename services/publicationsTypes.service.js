@@ -59,6 +59,13 @@ class PublicationsTypesService {
     }
   }
 
+
+  async findPublicationByName(name) {
+    const PublicationsType = await models.PublicationsTypes.findOne({ where: { name } }, { raw: true })
+    if (!PublicationsType) throw new CustomError('PublicationsType not found', 404, 'Not Found');
+    return PublicationsType
+  }
+
 }
 
 

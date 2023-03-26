@@ -17,6 +17,7 @@ const getTags = async(req, res, next) => {
     next(error);
   }
 }
+
 const getTag = async(req, res, next) => {
   try{
     let {id} = req.params;
@@ -26,15 +27,29 @@ const getTag = async(req, res, next) => {
     next(error);
   }
 }
-const createTag = async(req, res, next) => {
-  try{
-    let {body} = req;
-    let tag = await tagsService.createTeag(body);
-    return res.status(201).json({results: tag, message: 'Tag Added'});
+
+const createTag = async (req, res, next) => {
+  try {
+    const { name, description } = req.body;
+    const newTag = await tagsService.createTag({ name, description });
+    return res.status(201).json({ results: newTag, message: 'Tag Added' });
   } catch (error) {
     next(error);
   }
-}
+};
+
+
+const addImageToTag = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { image_url } = req.body;
+    const result = await tagsService.addImageToTag({ id, image_url });
+    return res.status(200).json({ message: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const updateTag = async(req, res, next) => {
   try{
     let {id} = req.params;
@@ -45,6 +60,7 @@ const updateTag = async(req, res, next) => {
     next(error);
   }
 }
+
 const deleteTag = async(req, res, next) => {
   try{
     const {id} = req.params;
@@ -60,5 +76,6 @@ module.exports = {
   getTag,
   createTag,
   updateTag,
-  deleteTag
+  deleteTag,
+  addImageToTag
 }

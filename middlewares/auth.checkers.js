@@ -4,53 +4,47 @@ const authService = new AuthService();
 
 
 async function isAdminRole(req, res, next) {
-  const userId = req.user && req.user.id; // Obtener el ID del usuario de la petición
-  if (!userId) {
-    console.log('Error de autenticación: Usuario no autenticado');
-    return res.status(401).send('Usuario no autorizado para realizar esta acción');
-  }
+  const userId = req.user.id; // Obtener el ID del usuario de la petición
+  console.log(userId,'here')
+ 
 
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      console.log('Error de autenticación: Usuario no tiene el rol "admin"');
-      return res.status(401).send('Usuario no autorizado para realizar esta acción');
+      return res.status(401).json({
+        error: {
+          status: 401,
+          message: 'User is not authorized to perform this action',
+          details: 'User does not have admin role' //Error while checking user roles
+        }
+      });
     }
     req.user = user; // Agregar el usuario encontrado a la petición
     return next();
   } catch (error) {
-    console.log('Error de autenticación: No se pudo obtener el usuario');
-    console.log(error.stack);
-    return res.status(401).send('Usuario no autorizado para realizar esta acción');
+    return res.status(401).json({
+      error: {
+        message: 'User is not authorized to perform this action'
+      }
+    });
   }
 }
 
 
 async function isAdminOrSameUserOrAnyUser(req, res, next) {
   const userId = req.params.id;
-  console.log('ID del usuario:', userId);
-
-  if (!userId) {
-    console.log('Error de autenticación: Usuario no autenticado');
-    return res.status(401).send('Usuario no autorizado para realizar esta acción');
-  }
 
   try {
     const user = await authService.getAuthenticatedUser(userId);
-    console.log('Usuario autenticado:', user);
 
     const authenticatedUser = await authService.getAuthenticatedUserFromRequest(req);
-    console.log('Usuario que hace la petición:', authenticatedUser);
 
     const isAdmin = authenticatedUser.profiles && authenticatedUser.profiles.some(profile => profile.role.name === 'admin');
 
-    console.log('¿Es administrador?:', isAdmin);
-
     const isCurrentUser = String(user.id) === String(authenticatedUser.id);
-    console.log('¿Es el mismo usuario que hace la petición?:', isCurrentUser);
+
 
     let filteredUserInfo = {
-      id: user.id,
       first_name: user.first_name,
       last_name: user.last_name,
       image_url: user.image_url
@@ -73,33 +67,54 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
       };
     } else {
       filteredUserInfo = {
-        id: user.id,
         first_name: user.first_name,
         last_name: user.last_name,
         image_url: user.image_url
       };
     }
 
-    console.log('Información del usuario:', filteredUserInfo);
-    res.json(filteredUserInfo);
+    return res.json(filteredUserInfo);
   } catch (error) {
-    console.log('Error de autenticación: No se pudo obtener el usuario');
-    console.log(error.stack);
-    return res.status(401).send('Usuario no autorizado para realizar esta acción');
+    return res.status(401).json({
+      error: {
+        status: 401,
+        message: 'User is not authorized to perform this action',
+      }
+    });
   }
 }
 
 
 function isTheSameUser(req, res, next) {
   if (req.user && (req.user.id === req.params.id)) {
-    const allowedFields = ['first_name', 'last_name', 'country_id', 'code_phone', 'phone'];
+
+    const allowedFields = [
+      'first_name',
+      'last_name',
+      'country_id',
+      'code_phone',
+      'phone'
+    ];
     const fieldsToUpdate = Object.keys(req.body);
 
     const isValidUpdate = fieldsToUpdate.every(field => allowedFields.includes(field));
 
     if (!isValidUpdate) {
-      console.log('Error de validación: Intento de actualizar un campo no permitido');
-      return res.status(400).send('No se permiten actualizar campos adicionales');
+
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Update failed',
+          details: 'Only certain fields are allowed to be updated',
+          fields: {
+            first_nam: 'String',
+            last_name: 'String',
+            country_id: '1',
+            code_phone: '+57',
+            phone: '3104589634'
+          }
+        }
+      });
     }
 
     req.user = {
@@ -112,15 +127,174 @@ function isTheSameUser(req, res, next) {
 
     next();
   } else {
-    console.log('Error de autenticación: Usuario no es el mismo usuario');
-    res.status(401).send('Usuario no autorizado para realizar esta acción');
+
+    res.status(401).json({
+      error: {
+        status: 401,
+        message: 'User is not authorized to perform this action',
+        details: 'User is not the same user'
+      }
+    });
   }
 }
+
+
+//update only admin role
+async function isAdminUpdate(req, res, next) {
+  const userId = req.user && req.user.id; // Obtener el ID del usuario de la petición
+
+  try {
+    const user = await authService.getAuthenticatedUser(userId);
+    if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
+      return res.status(401).json({
+        error: {
+          status: 401,
+          message: 'User is not authorized to perform this action',
+          details: 'User does not have admin role' //Error while checking user roles
+        }
+      });
+    }
+
+    // Solo permitir actualizar los campos "name" y "description"
+    const allowedFields = [
+      'name',
+      'description'
+    ];
+    const fieldsToUpdate = Object.keys(req.body);
+
+    const isValidUpdate = fieldsToUpdate.every(field => allowedFields.includes(field));
+
+    if (!isValidUpdate) {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Update failed',
+          details: 'Only name and description fields are allowed to be updated',
+          fields: {
+            name: 'String',
+            description: 'String'
+          }
+        }
+      });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      error: {
+        message: 'User is not authorized to perform this action'
+      }
+    });
+  }
+}
+
+
+
+
+//add tag
+async function isAdminCreateTag(req, res, next) {
+  const userId = req.user && req.user.id; // Obtener el ID del usuario de la petición
+
+  try {
+    const user = await authService.getAuthenticatedUser(userId);
+    if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
+      return res.status(401).json({
+        error: {
+          status: 401,
+          message: 'User is not authorized to perform this action',
+          details: 'User does not have admin role' //Error while checking user roles
+        }
+      });
+    }
+
+    // Verificar que se estén enviando los campos requeridos para crear un tag
+    const requiredFields = ['name', 'description'];
+    const fields = Object.keys(req.body);
+    const missingFields = requiredFields.filter(field => !fields.includes(field));
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Missing fields',
+          details: `The following fields are required: ${missingFields.join(', ')}`
+        }
+      });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      error: {
+        message: 'User is not authorized to perform this action'
+      }
+    });
+  }
+}
+
+
+//add image in tag
+async function isAdminAddImage(req, res, next) {
+  const userId = req.user && req.user.id; // Obtener el ID del usuario de la petición
+
+  try {
+    const user = await authService.getAuthenticatedUser(userId);
+    if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
+      return res.status(401).json({
+        error: {
+          status: 401,
+          message: 'User is not authorized to perform this action',
+          details: 'User does not have admin role' //Error while checking user roles
+        }
+      });
+    }
+
+    // Verificar si es una solicitud POST para agregar una imagen
+    if (req.method !== 'POST') {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Invalid request method',
+          details: 'Only POST requests are allowed for adding images'
+        }
+      });
+    }
+
+    // Verificar si se proporciona el campo "image_url" en la solicitud
+    const { image_url } = req.body;
+    if (!image_url) {
+      return res.status(400).json({
+        error: {
+          status: 400,
+          message: 'Missing fields',
+          details: 'The following fields are required: image_url',
+          fields: {
+            image_url: 'String'
+          }
+        }
+      });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      error: {
+        message: 'User is not authorized to perform this action'
+      }
+    });
+  }
+}
+
+
+
 
 
 
 module.exports = {
   isAdminRole,
   isAdminOrSameUserOrAnyUser,
-  isTheSameUser
+  isTheSameUser,
+  isAdminUpdate,
+  isAdminCreateTag,
+  isAdminAddImage
 };

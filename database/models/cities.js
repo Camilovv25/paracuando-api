@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
       references:{
-        model: 'states',
+        model: 'States',
         key: 'id'
       },
     },
@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Cities',
-    tableName: 'cities',
+    tableName: 'Cities',
     underscored: true,
     timestamps: true,
     scopes: {

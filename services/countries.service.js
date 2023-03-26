@@ -97,6 +97,12 @@ class CountriesService {
     }
   }
 
+  async findCountryByName(name) {
+    const country = await models.Countries.findOne({ where: { name } }, { raw: true })
+    if (!country) throw new CustomError('Country not found', 404, 'Not Found');
+    return country
+  }
+  
 }
 
 module.exports = CountriesService
