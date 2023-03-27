@@ -47,7 +47,7 @@ module.exports = {
         }
       ]
 
-      await queryInterface.bulkInsert('Publications', publications, { transaction })
+      await queryInterface.bulkInsert('publications', publications, { transaction })
       await transaction.commit()
     } catch (error) {
       await transaction.rollback()
@@ -64,7 +64,7 @@ module.exports = {
       const publicationType = await publicationsTypesService.findPublicationByName('Torneos')
       const city = await citiesService.findCityByName('Palenque')
 
-      await queryInterface.bulkDelete('Publications', {
+      await queryInterface.bulkDelete('publications', {
         [Op.or]: [
           {
             user_id: {

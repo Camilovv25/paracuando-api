@@ -34,7 +34,7 @@ module.exports = {
           updated_at: new Date()
         }
       ]
-      await queryInterface.bulkInsert('Cities', cities, { transaction })
+      await queryInterface.bulkInsert('cities', cities, { transaction })
       await transaction.commit();
     } catch (error) {
       console.log(error.stack)
@@ -48,7 +48,7 @@ module.exports = {
       const state1 = await statesService.findStateByName('Campeche');
       const state2 = await statesService.findStateByName('Chihuahua');
       const state3 = await statesService.findStateByName('Chiapas');
-      await queryInterface.bulkDelete('Cities', {
+      await queryInterface.bulkDelete('cities', {
         [Op.or]: [
           {
             state_id: {

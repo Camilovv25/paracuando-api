@@ -4,7 +4,7 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.createTable('PublicationsTags', {
+      await queryInterface.createTable('publications_tags', {
         // id: {
         //   allowNull: false,
         //   autoIncrement: true,
@@ -17,7 +17,7 @@ module.exports = {
           primaryKey: true,
           foreignKey: true,
           references: {
-            model: 'Tags',
+            model: 'tags',
             key: 'id' 
           },
           onUpdate: 'CASCADE',
@@ -29,7 +29,7 @@ module.exports = {
           primaryKey: true,
           foreignKey: true,
           references: {
-            model: 'Publications',
+            model: 'publications',
             key: 'id'
           },
           onUpdate: 'CASCADE',
@@ -54,7 +54,7 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.dropTable('PublicationsTags',{transaction});
+      await queryInterface.dropTable('publications_tags',{transaction});
       await transaction.commit();
     } catch (error) {
       await transaction.rollback();

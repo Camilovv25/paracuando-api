@@ -5,7 +5,7 @@ module.exports = {
   async up(queryInterface, /*Sequelize*/) {
     const transaction = await queryInterface.sequelize.transaction()
     try {
-      await queryInterface.bulkInsert('Tags', [
+      await queryInterface.bulkInsert('tags', [
         {
           id: '1',
           name: 'Ropa y accesorios',

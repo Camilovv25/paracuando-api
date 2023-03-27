@@ -30,7 +30,7 @@ module.exports = {
           updated_at: new Date()
         }
       ]
-      await queryInterface.bulkInsert('States', state, { transaction })
+      await queryInterface.bulkInsert('states', state, { transaction })
       await transaction.commit()
     } catch (error) {
       await transaction.rollback()
@@ -41,7 +41,7 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction()
     try {
       const country = await countriesService.findCountryByName('México');
-      await queryInterface.bulkDelete('States', {
+      await queryInterface.bulkDelete('states', {
         [Op.or]: [
           {
             country_id: {

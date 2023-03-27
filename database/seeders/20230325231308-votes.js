@@ -33,7 +33,7 @@ module.exports = {
         },
       ]
 
-      await queryInterface.bulkInsert('Votes', votes, { transaction })
+      await queryInterface.bulkInsert('votes', votes, { transaction })
       await transaction.commit()
     } catch (error) {
       await transaction.rollback()
@@ -50,7 +50,7 @@ module.exports = {
       const publication1 = await publicationsService.findPublicationByTitle('Torneo de Pelota Maya')
       const publication2 = await publicationsService.findPublicationByTitle('Torneo de Ajedrez en Palenque')
 
-      await queryInterface.bulkDelete('Votes', {
+      await queryInterface.bulkDelete('votes', {
         [Op.or]: [
           {
             user_id: {

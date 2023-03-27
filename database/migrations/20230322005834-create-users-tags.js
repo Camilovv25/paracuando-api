@@ -4,14 +4,14 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.createTable('UsersTags', {
+      await queryInterface.createTable('users_tags', {
         tag_id: {
           type: Sequelize.INTEGER,
           allowNull: false,
           primaryKey: true,
           foreignKey: true,
           references: {
-            model: 'Tags',
+            model: 'tags',
             key: 'id'
           },
           onDelete: 'CASCADE',
@@ -49,7 +49,7 @@ module.exports = {
   async down(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     try {
-      await queryInterface.dropTable('UsersTags',{transaction});
+      await queryInterface.dropTable('users_tags',{transaction});
       await transaction.commit();
     } catch (error) {
       await transaction.rollback();
