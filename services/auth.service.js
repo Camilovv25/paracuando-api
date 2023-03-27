@@ -55,7 +55,8 @@ class AuthService {
     const user = await models.Users.findOne({
       where: { id },
       include: [
-        { model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] }
+        { model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] },
+        {model: models.Tags, as:'interest', through: {attributes:[]}}
       ]
     });
     if (!user) throw new CustomError('User not found', 404, 'NotFound');

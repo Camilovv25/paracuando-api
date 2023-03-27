@@ -86,6 +86,19 @@ class UsersService {
       let user = await models.Users.findByPk(id)
       if (!user) throw new CustomError('Not found user', 404, 'Not Found')
       let updatedUser = await user.update(obj, { transaction })
+
+      if (obj.tags){
+        let arrayTags = obj.tags.split(',')
+        let findedTags = await models.Tags.findAll({
+          where: {id: arrayTags},
+          attributes: ['id'],
+          raw: true 
+        })
+        if (findedTags.length > 0){
+          let tags_ids = findedTags.map(tag => tag['id'])
+          await user.addInterest(tags_ids)
+        }
+      }
       await transaction.commit()
       return updatedUser
     } catch (error) {

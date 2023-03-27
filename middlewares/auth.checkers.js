@@ -1,5 +1,5 @@
 const AuthService = require('../services/auth.service');
-
+const models = require('../database/models')
 const authService = new AuthService();
 
 
@@ -47,10 +47,12 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
     let filteredUserInfo = {
       first_name: user.first_name,
       last_name: user.last_name,
-      image_url: user.image_url
+      image_url: user.image_url,
+      interest: user.interest
     };
 
     if (isAdmin || isCurrentUser) {
+      // user.setInterest()
       filteredUserInfo = {
         id: user.id,
         first_name: user.first_name,
@@ -63,7 +65,8 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
         country_id: user.country_id,
         image_url: user.image_url,
         created_at: user.created_at,
-        updated_at: user.updated_at
+        updated_at: user.updated_at,
+        interest: user.interest
       };
     } else {
       filteredUserInfo = {
@@ -93,7 +96,8 @@ function isTheSameUser(req, res, next) {
       'last_name',
       'country_id',
       'code_phone',
-      'phone'
+      'phone',
+      'tags'
     ];
     const fieldsToUpdate = Object.keys(req.body);
 
@@ -111,7 +115,8 @@ function isTheSameUser(req, res, next) {
             last_name: 'String',
             country_id: '1',
             code_phone: '+57',
-            phone: '3104589634'
+            phone: '3104589634',
+            tags: '1,2,3'
           }
         }
       });
