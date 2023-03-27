@@ -107,61 +107,6 @@ class PublicationsService {
   }
 
 
-
-
-
-  async findPublicationsByUser(query) {
-    const options = {
-      where: {},
-      include: [
-        //{ model: models.Users, as: 'user' },
-        //{ model: models.PublicationsTypes, as: 'publication_type' },
-        //{ model: models.Cities, as: 'city' },
-        //{ model: models.PublicationsImages, as: 'publication_image' },
-        //{ model: models.Tags, as: 'publication_tag' }
-      ]
-    }
-
-    const { limit, offset } = query
-    if (limit && offset) {
-      options.limit = limit
-      options.offset = offset
-    }
-
-    const { id, user_id, publication_type_id, city_id, title, description, content, reference_link } = query
-    if (id) {
-      options.where.id = id
-    }
-    if (user_id) {
-      options.where.user_id = user_id
-    }
-    if (publication_type_id) {
-      options.where.publication_type_id = publication_type_id
-    }
-    if (city_id) {
-      options.where.city_id = city_id
-    }
-    if (title) {
-      options.where.title = { [Op.iLike]: `%${title}%` }
-    }
-    if (description) {
-      options.where.description = { [Op.iLike]: `%${description}%` }
-    }
-    if (content) {
-      options.where.content = { [Op.iLike]: `%${content}%` }
-    }
-    if (reference_link) {
-      options.where.reference_link = { [Op.iLike]: `%${reference_link}%` }
-    }
-
-    //Necesario para el findAndCountAll de Sequelize
-    options.distinct = true
-
-    const publications = await models.Publications.findAndCountAll(options)
-    return publications
-  }
-
-
   async findPublicationByTitle(name) {
     const publication = await models.Publications.findOne({ where: { title: name } }, { raw: true });
     if (!publication) throw new CustomError('Publication not found', 404, 'Not Found');

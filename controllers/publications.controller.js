@@ -61,29 +61,10 @@ const removePublication = async (req, res, next) => {
 };
 
 
-const getPublicationsByUser = async (req, res, next) => {
-  try {
-    const { page = 1, size = 10 } = req.query;
-
-    const { limit, offset } = getPagination(page, size);
-
-    const { user_id, publication_type_id, city_id, title, description, content, reference_link } = req.query;
-
-    const publications = await publicationsService.findPublicationsByUser({ limit, offset, user_id, publication_type_id, city_id, title, description, content, reference_link });
-
-    const results = getPagingData(publications, page, limit);
-
-    return res.json({ results });
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   getPublications,
   addPublication,
   getPublication,
   updatePublication,
-  removePublication,
-  getPublicationsByUser
+  removePublication
 };
