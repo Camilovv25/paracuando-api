@@ -20,19 +20,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       primaryKey: true,
       allowNull: false,
-      references: {
-        model: 'Publications',
-        key: 'id'
-      }
+
     },
     user_id: {
       type:DataTypes.UUID,
       allowNull: false,
       primaryKey: true,
-      references: {
-        model: 'Users',
-        key: 'id'
-      }
+      
     } 
   }, {
     sequelize,

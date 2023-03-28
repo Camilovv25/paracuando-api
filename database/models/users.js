@@ -8,10 +8,8 @@ module.exports = (sequelize, DataTypes) => {
       Users.belongsTo(models.Countries, { as: 'country', foreignKey: 'country_id' });
       Users.hasMany(models.Profiles, { as: 'profiles', foreignKey: 'user_id' });
       Users.hasMany(models.Publications, {as: 'publication', foreignKey: 'user_id'})
-
       Users.belongsToMany(models.Tags, { as: 'interest',through: models.UsersTags, foreignKey: 'user_id' })
-
-      Users.belongsToMany(models.Publications, { as: 'publications',through: models.Votes, foreignKey: 'user_id' })
+      Users.belongsToMany(models.Publications, { as: 'vote',through: models.Votes, foreignKey: 'user_id' })
     }
   }
 

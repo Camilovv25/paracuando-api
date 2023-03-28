@@ -1,6 +1,7 @@
 const models = require('../database/models');
 const { CustomError } = require('../utils/helpers');
 const { Op } = require('sequelize');
+const uuid = require('uuid')
 
 class PublicationsService {
   constructor() { }
@@ -8,12 +9,13 @@ class PublicationsService {
   async findAndCount(query) {
     const options = {
       where: {},
+      attributes: {exclude:['content']},
       include: [
-        { model: models.Users, as: 'user' },
-        { model: models.PublicationsTypes, as: 'publication_type' },
-        { model: models.Cities, as: 'city' },
-        { model: models.PublicationsImages, as: 'publication_image' },
-        { model: models.Tags, as: 'publication_tag' }, // update alias name
+        { model: models.Users, as: 'user', attributes: {exclude:['email_verified','password','token']}},
+        // { model: models.PublicationsTypes, as: 'publication_type' },
+        // { model: models.Cities, as: 'city' },
+        // { model: models.PublicationsImages, as: 'publication_image' },
+        { model: models.Tags, as:'tags', attributes: ['id','name'], through:{attributes:[]}, }// update alias name
       ],
     };
 
@@ -67,9 +69,39 @@ class PublicationsService {
     return publications;
   }
 
-  async createPublication(obj) {
-    const publication = await models.Publications.create(obj);
-    return publication;
+  async createPublication({title, description, content, reference_link, publication_type_id, user_id, tags}) {
+    const transaction = await models.sequelize.transaction()
+    try {
+      let newPublication = await models.Publications.create({
+        id: uuid.v4(),
+        user_id: user_id,
+        publication_type_id,
+        title,
+        description,
+        content,
+        reference_link,
+        city_id: 1
+      },{transaction})
+      if (tags){
+        let arrayTags = tags.split(',')
+        let findedTags = await models.Tags.findAll({
+          where:{id: arrayTags},
+          attributes: ['id'],
+          raw: true
+        })
+        if (findedTags.length > 0){
+          let tags_ids = findedTags.map(tag => tag['id'])
+          await newPublication.setPublications_tags(tags_ids, {transaction})
+        }
+      }
+      //await newPublication.addUser(user_id, { through: { vote: true } },{transaction})
+      await newPublication.setVote(user_id,{transaction})
+      await transaction.commit()
+      return newPublication 
+    } catch ( error ) {
+      await transaction.rollback()
+      throw error 
+    }
   }
 
   async getPublication(id) {

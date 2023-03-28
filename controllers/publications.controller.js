@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken')
 const PublicationsService = require('../services/publications.service');
 const { getPagination, getPagingData } = require('../utils/helpers');
 
@@ -5,11 +6,14 @@ const publicationsService = new PublicationsService();
 
 const getPublications = async (req, res, next) => {
   try {
-    const { page = 1, size = 10 } = req.query;
+    const query = req.query
+    const { page, size } = query;
 
     const { limit, offset } = getPagination(page, size);
+    query.limit = limit
+    query.offset = offset
 
-    const publications = await publicationsService.findAndCount({ limit, offset });
+    const publications = await publicationsService.findAndCount(query);
 
     const results = getPagingData(publications, page, limit);
 
@@ -21,9 +25,12 @@ const getPublications = async (req, res, next) => {
 
 const addPublication = async (req, res, next) => {
   try {
-    const { body } = req;
-    const publication = await publicationsService.createPublication(body);
-    return res.status(201).json({ results: publication });
+    const { title, description, content, reference_link, publication_type_id, tags } = req.body;
+    const token = req.headers['authorization'].split(' ')[1]
+    const payload = jwt.decode(token)
+    const user_id = payload.id
+    const publication = await publicationsService.createPublication({title, description, content, reference_link, publication_type_id, user_id, tags});
+    return res.status(201).json({ results: publication, message: 'Publication added' });
   } catch (error) {
     next(error);
   }

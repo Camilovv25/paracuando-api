@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const publicationsTags = require('./publicationsTags');
 module.exports = (sequelize, DataTypes) => {
   class Tags extends Model {
     /**

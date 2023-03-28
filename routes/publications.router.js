@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { logIn } = require('../controllers/auth.controller');
 const {   getPublications,
   addPublication,
   getPublication,
@@ -9,6 +10,7 @@ const {   getPublications,
 
 
 router.get('/', getPublications);
+router.post('/', addPublication);
 
 router.get('/:id', getPublication);
 
