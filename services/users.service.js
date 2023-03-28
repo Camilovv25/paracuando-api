@@ -195,23 +195,26 @@ class UsersService {
 
 
   async findVotesByUser(userId, page = 1, pageSize = 10) {
-    const options = {
-      where: { user_id: userId },//undefine
-      include: [{ model: models.Publications, as: 'publication' }],
-      order: [['createdAt', 'DESC']],
-      offset: (page - 1) * pageSize,
-      limit: pageSize,
-    };
-
-    const { rows: votes, count: totalVotes } = await models.Votes.findAndCountAll(options);
-
-    return {
-      page,
-      pageSize,
-      totalItems: totalVotes,
-      totalPages: Math.ceil(totalVotes / pageSize),
-      items: votes.map((vote) => vote.publication),
-    };
+    const filteredVotes = await models.Votes.findAll({
+      where: {user_id: userId},
+      attributes: ['publication_id']
+    })
+    const publicationsIds = filteredVotes.map(vote => vote.publication_id)
+    const results = await models.Publications.findAndCountAll({
+      where: {
+        id:{
+          [Op.in]: publicationsIds
+        }
+      }
+    }) 
+    return results
+    // return {
+    //   page,
+    //   pageSize,
+    //   totalItems: totalVotes,
+    //   totalPages: Math.ceil(totalVotes / pageSize),
+    //   items: votes.map((vote) => vote.publication),
+    // };
   }
 
 

@@ -64,18 +64,11 @@ const removeUser = async (req, res, next) => {
 
 const getVotesByUser = async (req, res, next) => {
   try {
-    const { userId } = req.params;
-    const { page = 1, size = 10 } = req.query;
+    const { id } = req.params;
+    const { page, size } = req.query;
     const { limit, offset } = getPagination(page, size);
-    const { votes, pagination } = await usersService.findVotesByUser(
-      userId,
-      limit,
-      offset
-    );
-    const results = {
-      data: votes,
-      pagination: getPagingData(pagination, page, limit),
-    };
+    const publications = await usersService.findVotesByUser(id, limit, offset);
+    const results = getPagingData(publications, page, limit)
     return res.json(results);
   } catch (error) {
     next(error);
