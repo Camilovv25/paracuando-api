@@ -90,6 +90,22 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
 
 function isTheSameUser(req, res, next) {
   if (req.user && (req.user.id === req.params.id)) {
+    next();
+  } else {
+    res.status(401).json({
+      error: {
+        status: 401,
+        message: 'Unauthorized',
+        details: 'User is not the same user'
+      }
+    });
+  }
+}
+
+
+
+function isTheSameUserUpdated(req, res, next) {
+  if (req.user && (req.user.id === req.params.id)) {
 
     const allowedFields = [
       'first_name',
@@ -142,6 +158,8 @@ function isTheSameUser(req, res, next) {
     });
   }
 }
+
+
 
 
 //update only admin role
@@ -301,5 +319,6 @@ module.exports = {
   isTheSameUser,
   isAdminUpdate,
   isAdminCreateTag,
-  isAdminAddImage
+  isAdminAddImage,
+  isTheSameUserUpdated
 };
