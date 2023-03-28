@@ -31,12 +31,13 @@ const getTag = async(req, res, next) => {
 const createTag = async (req, res, next) => {
   try {
     const { name, description } = req.body;
-    const newTag = await tagsService.createTag({ name, description });
-    return res.status(201).json({ results: newTag, message: 'Tag Added' });
+    await tagsService.createTag({ name, description });
+    return res.status(201).json({ message: 'Tag Added' });
   } catch (error) {
     next(error);
   }
 };
+
 
 
 const addImageToTag = async (req, res, next) => {
@@ -44,22 +45,23 @@ const addImageToTag = async (req, res, next) => {
     const { id } = req.params;
     const { image_url } = req.body;
     const result = await tagsService.addImageToTag({ id, image_url });
-    return res.status(200).json({ message: result });
+    return res.status(201).json({ message: 'Image Added' });
   } catch (error) {
     next(error);
   }
 };
 
-const updateTag = async(req, res, next) => {
-  try{
-    let {id} = req.params;
-    let {body} = req;
-    let tag = await tagsService.updateTag(id, body);
-    return res.status(200).json({results: tag , message: 'Succes Update'});
+const updateTag = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    const obj = req.body;
+    await tagsService.updateTag(id, obj);
+    return res.json({ message: 'Success Update' }); 
   } catch (error) {
     next(error);
   }
-}
+};
+
 
 const deleteTag = async(req, res, next) => {
   try{
