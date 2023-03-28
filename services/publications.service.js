@@ -108,11 +108,11 @@ class PublicationsService {
     const publication = await models.Publications.findOne({
       where: { id },
       include: [
-        { model: models.Users, as: 'user' },
-        { model: models.PublicationsTypes, as: 'publication_type' },
-        { model: models.Cities, as: 'city' },
-        { model: models.PublicationsImages, as: 'publication_image' }, // update alias name
-        { model: models.Tags, as: 'publication_tag' }, // update alias name
+        { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
+        { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
+        { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
+        { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] }  }, // update alias name
+        { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] }  }, // update alias name
       ],
     });
     if (!publication) {

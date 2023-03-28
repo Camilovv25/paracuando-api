@@ -51,14 +51,16 @@ class TagsService {
     try {
       let tag = await models.Tags.findByPk(id);
       if (!tag) throw new CustomError('Not found Tag', 404, 'Not found');
-      let tagUdpated = await tag.update(obj, { transaction });
+      await tag.update(obj, { transaction });
       await transaction.commit();
-      return tagUdpated
+
+      return { message: 'Success Update' }; 
     } catch (error) {
-      await transaction.rollBack();
-      throw error
+      await transaction.rollback();
+      throw error;
     }
   }
+
 
   async createTag({ name, description }) {
     let transaction;
@@ -66,14 +68,15 @@ class TagsService {
       transaction = await models.sequelize.transaction();
       const lastTag = await models.Tags.findOne({ order: [['id', 'DESC']] });
       const nextId = lastTag ? lastTag.id + 1 : 1;
-      let newTag = await models.Tags.create({ id: nextId, name, description, image_url: '' }, { transaction });
+      await models.Tags.create({ id: nextId, name, description, image_url: '' }, { transaction });
       await transaction.commit();
-      return newTag;
+      return { message: 'Tag Added' };
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;
     }
   }
+
 
 
 
@@ -85,7 +88,7 @@ class TagsService {
       if (!tag) throw new Error('Tag not found');
       await models.Tags.update({ image_url }, { where: { id }, transaction });
       await transaction.commit();
-      return 'Image added successfully';
+      return { message: 'Image Added' };
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;

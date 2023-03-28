@@ -45,19 +45,22 @@ class PublicationsTypesService {
     return publicationType
   }
 
-  async updatePublicationType(id,obj) {
-    const transaction = await models.sequelize.transaction()
-    try{
-      let publicationType = await models.PublicationsTypes.findByPk(id)
-      if (!publicationType) throw new CustomError('Not found publication type', 404, 'Not found')
-      let updatedPublicationType = await publicationType.update(obj,{transaction})
-      await transaction.commit()
-      return updatedPublicationType
-    } catch(error){
-      await transaction.rollback()
-      throw error
+  async updatePublicationType(id, obj) {
+    const transaction = await models.sequelize.transaction();
+    try {
+      let publicationType = await models.PublicationsTypes.findByPk(id);
+      if (!publicationType) throw new CustomError('Not found publication type', 404, 'Not found');
+
+      await publicationType.update(obj, { transaction });
+      await transaction.commit();
+
+      return { message: 'Success Update' }; 
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
   }
+
 
 
   async findPublicationByName(name) {

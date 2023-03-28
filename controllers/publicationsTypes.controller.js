@@ -31,16 +31,17 @@ const getPublicationTypeOr404 = async(req,res,next) => {
   }
 }
 
-const updatePublicationType = async (req,res,next) => {
-  try{
+const updatePublicationType = async (req, res, next) => {
+  try {
     const id = req.params.id;
     const obj = req.body;
-    let publicationType = await publicationsTypesService.updatePublicationType(id, obj);
-    return  res.json({results: publicationType})
+    await publicationsTypesService.updatePublicationType(id, obj);
+    return res.json({ message: 'Success Update' }); 
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
+
 
 module.exports ={
   getPublicationsTypes,
