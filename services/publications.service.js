@@ -146,6 +146,9 @@ class PublicationsService {
   async getPublication(id) {
     const publication = await models.Publications.findOne({
       where: { id },
+      attributes:{
+        include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
+      },
       include: [
         { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
         { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
