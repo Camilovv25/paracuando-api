@@ -4,7 +4,8 @@ const {   getPublications,
   addPublication,
   getPublication,
   updatePublication,
-  removePublication, } = require('../controllers/publications.controller');
+  removePublication,
+  updateVote, } = require('../controllers/publications.controller');
 //const { isAdminRole, isTheSameUser, isAdminOrSameUserOrAnyUser } = require('../middlewares/auth.checkers');
 
 
@@ -13,6 +14,7 @@ router.get('/', getPublications);
 router.post('/', addPublication);
 
 router.get('/:id', getPublication);
+router.post('/:id/vote', updateVote);
 
 //router.put('/:id', updatePublication);
 

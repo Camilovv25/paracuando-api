@@ -67,11 +67,24 @@ const removePublication = async (req, res, next) => {
   }
 };
 
+const updateVote = async(req, res, next) => {
+  try {
+    const token = req.headers['authorization'].split(' ')[1]
+    const payload = jwt.decode(token)
+    const userId = payload.id
+    const publicationId = req.params.id
+    const message = await publicationsService.addOrSubtractVote(userId, publicationId)
+    return res.json(message)
+  } catch (error){
+    next(error)
+  }
+}
 
 module.exports = {
   getPublications,
   addPublication,
   getPublication,
   updatePublication,
-  removePublication
+  removePublication,
+  updateVote
 };
