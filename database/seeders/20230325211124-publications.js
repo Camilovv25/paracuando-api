@@ -46,7 +46,6 @@ module.exports = {
           updated_at: new Date(),
         }
       ]
-
       await queryInterface.bulkInsert('publications', publications, { transaction })
       await transaction.commit()
     } catch (error) {

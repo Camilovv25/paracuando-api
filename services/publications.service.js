@@ -11,7 +11,7 @@ class PublicationsService {
       where: {},
       include: [
         { model: models.Users, as: 'user', attributes: {exclude:['email_verified','password','token']}},
-        { model: models.Tags, as:'publications_tags', through:{attributes:[]}, where:{}},// update alias name
+        { model: models.Tags, as:'tags', through:{attributes:[]}, where:{}},
       ],
       attributes: {
         exclude:['content'],
@@ -130,7 +130,7 @@ class PublicationsService {
         })
         if (findedTags.length > 0){
           let tags_ids = findedTags.map(tag => tag['id'])
-          await newPublication.setPublications_tags(tags_ids, {transaction})
+          await newPublication.setTags(tags_ids, {transaction})
         }
       }
       //await newPublication.addUser(user_id, { through: { vote: true } },{transaction})
@@ -154,7 +154,7 @@ class PublicationsService {
         { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
         { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
         { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] }  }, // update alias name
-        { model: models.Tags, as: 'publications_tags', attributes: { exclude: ['created_at', 'updated_at'] }  }, // update alias name
+        { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] }  }, // update alias name
       ],
     });
     if (!publication) {
