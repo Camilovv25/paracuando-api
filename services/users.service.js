@@ -12,6 +12,7 @@ class UsersService {
   async findAndCount(query) {
     const options = {
       where: {},
+      attributes: { exclude: ['password'] }
     }
 
     const { limit, offset } = query
