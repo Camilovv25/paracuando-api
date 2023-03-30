@@ -11,7 +11,7 @@ class PublicationsService {
       where: {},
       include: [
         { model: models.Users, as: 'user', attributes: {exclude:['email_verified','password','token']}},
-        { model: models.Tags, as:'tags', through:{attributes:[]}, where:{}},
+        { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
       ],
       attributes: {
         exclude:['content'],
@@ -73,7 +73,8 @@ class PublicationsService {
     const {tags} = query
     if(tags) { 
       const arrayTags = tags.split(',')
-      options.include[1].where.id = {[Op.in]:arrayTags}
+      options.where['$tags.id$'] = {[Op.in]:arrayTags}
+      //options.include[1].where.id = {[Op.in]:arrayTags}
     }
 
     // const {votes_count} = query
