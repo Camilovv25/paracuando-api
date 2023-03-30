@@ -1,24 +1,26 @@
 const router = require('express').Router();
-const { getUsers, getUser, updateUser, getVotesByUser, addImageToUser,getUserPublications} = require('../controllers/users.controller');
-const {getPublicationsByUser} = require('../controllers/publications.controller');
-const { isAdminRole, isTheSameUser, isTheSameUserUpdated, isAdminOrSameUserOrAnyUser} = require('../middlewares/auth.checkers');
+
+const { getUsers, getUser, updateUser, getVotesByUser, getUserPublications } = require('../controllers/users.controller');
+const { isAdminRole, isTheSameUserUpdated, isAdminOrSameUserOrAnyUser } = require('../middlewares/auth.checkers');
 
 
 
-router.get('/', isAdminRole, getUsers);//listo
+router.route('/')
+  .get(isAdminRole, getUsers)
 
-router.get('/:id', isAdminOrSameUserOrAnyUser, getUser);//listo
+router.route('/:id')
+  .get(isAdminOrSameUserOrAnyUser, getUser)
+  .put(isTheSameUserUpdated, updateUser)
 
-router.get('/:id/votes', getVotesByUser);
+router.route('/:id/votes')
+  .get(getVotesByUser)
 
-router.put('/:id', isTheSameUserUpdated, updateUser);//listo
+router.route('/:id/publications')
+  .get(getUserPublications)
 
-router.get('/:id/publications', getUserPublications);//listo
+//router.post('/:id/add-image');
 
-router.post('/:id/add-image', isTheSameUser);//verificar
-
-router.delete('/:id/remove-image', updateUser);//vericar
+//router.delete('/:id/remove-image');
 
 
 module.exports = router;
-

@@ -1,8 +1,8 @@
 const router = require('express').Router();
 
 const {getTags, getTag, createTag, updateTag, deleteTag, addImageToTag} = require ('../controllers/tags.controller');
-
 const { isAdminCreateTag, isAdminAddImage, isAdminUpdate, isAdminRole } = require ('../middlewares/auth.checkers');
+
 
 
 router.route('/')
@@ -14,6 +14,8 @@ router.route('/:id')
   .put(isAdminUpdate, updateTag)
   .delete(isAdminRole, deleteTag)
 
-router.post('/:id/add-image', isAdminAddImage, addImageToTag);
+router.route('/:id/add-image')
+  .post(isAdminAddImage, addImageToTag)
+
 
 module.exports = router 

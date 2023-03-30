@@ -29,12 +29,13 @@ const addPublication = async (req, res, next) => {
     const token = req.headers['authorization'].split(' ')[1]
     const payload = jwt.decode(token)
     const user_id = payload.id
-    const publication = await publicationsService.createPublication({title, description, content, reference_link, publication_type_id, user_id, tags});
-    return res.status(201).json({ results: publication, message: 'Publication added' });
+    await publicationsService.createPublication({ title, description, content, reference_link, publication_type_id, user_id, tags });
+    return res.status(201).json({ message: 'successfully created' });
   } catch (error) {
     next(error);
   }
 };
+
 
 const getPublication = async (req, res, next) => {
   try {

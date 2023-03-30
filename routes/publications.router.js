@@ -1,35 +1,25 @@
 const router = require('express').Router();
-const { logIn } = require('../controllers/auth.controller');
-const {   getPublications,
-  addPublication,
-  getPublication,
-  updatePublication,
-  removePublication,
-  updateVote, } = require('../controllers/publications.controller');
-//const { isAdminRole, isTheSameUser, isAdminOrSameUserOrAnyUser } = require('../middlewares/auth.checkers');
+
+
+const { getPublications, addPublication, getPublication, removePublication, updateVote } = require('../controllers/publications.controller');
+
+const { isAdminOrSameUser } = require('../middlewares/auth.checkers');
+const passport = require('../libs/passport');
+
+const auth = passport.authenticate('jwt', { session: false })
 
 
 
-router.get('/', getPublications);
-router.post('/', addPublication);
+router.route('/')
+  .get(getPublications)
+  .post(addPublication)
 
-router.get('/:id', getPublication);
-router.post('/:id/vote', updateVote);
+router.route('/:id')
+  .get(getPublication)
+  .delete(auth, isAdminOrSameUser, removePublication)
 
-//router.put('/:id', updatePublication);
-
-
-
-
-//router.get('/:id/votes', getVotes);
-
-//router.get('/:id/publications', getPost);
-
-
-//router.post('/:id/add-image', updateUser);
-
-
-//router.delete('/:id/remove-image', removeUser);
+router.route('/:id/vote')
+  .post(updateVote)
 
 
 module.exports = router;

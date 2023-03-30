@@ -1,18 +1,18 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 
-const {
-  getPublicationsTypes,
-  getPublicationTypeOr404,
-  updatePublicationType } = require('../controllers/publicationsTypes.controller');
+const { getPublicationsTypes, getPublicationTypeOr404, updatePublicationType } = require('../controllers/publicationsTypes.controller');
 
 const { isAdminUpdate } = require('../middlewares/auth.checkers')
 
-router.get('/', getPublicationsTypes);
 
-router.get('/:id', getPublicationTypeOr404);
 
-router.put('/:id', isAdminUpdate, updatePublicationType)
+router.route('/')
+  .get(getPublicationsTypes)
+
+router.route('/:id')
+  .get(getPublicationTypeOr404)
+  .put(isAdminUpdate, updatePublicationType)
+
 
 module.exports = router
 

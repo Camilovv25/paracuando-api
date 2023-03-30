@@ -1,6 +1,6 @@
 const models = require('../database/models');
 const { CustomError } = require('../utils/helpers');
-const { Op, cast, literal} = require('sequelize');
+const { Op, cast, literal } = require('sequelize');
 const uuid = require('uuid')
 
 class PublicationsService {
@@ -10,19 +10,19 @@ class PublicationsService {
     const options = {
       where: {},
       include: [
-        { model: models.Users, as: 'user', attributes: {exclude:['email_verified','password','token']}},
-        { model: models.Tags, as:'tags', through:{attributes:[]}, where:{}},
+        { model: models.Users, as: 'user', attributes: { exclude: ['email_verified', 'password', 'token'] } },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, where: {} },
       ],
       attributes: {
-        exclude:['content'],
-        include:[
+        exclude: ['content'],
+        include: [
           [cast(literal(
             '(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'
-          ), 'integer'), 
+          ), 'integer'),
           'votes_count'],
         ]
       },
-      having:{}
+      having: {}
     };
 
     const { limit, offset } = query;
@@ -70,10 +70,10 @@ class PublicationsService {
     if (reference_link) {
       options.where.reference_link = { [Op.iLike]: `%${reference_link}%` };
     }
-    const {tags} = query
-    if(tags) { 
+    const { tags } = query
+    if (tags) {
       const arrayTags = tags.split(',')
-      options.include[1].where.id = {[Op.in]:arrayTags}
+      options.include[1].where.id = { [Op.in]: arrayTags }
     }
 
     // const {votes_count} = query
@@ -85,30 +85,32 @@ class PublicationsService {
     const publications = await models.Publications.findAndCountAll(options);
     return publications;
   }
-  async addOrSubtractVote(userId, publicationId){
+
+
+  async addOrSubtractVote(userId, publicationId) {
     const transaction = await models.sequelize.transaction()
-    try{
-      let currentVote = await models.Votes.destroy({where:{user_id: userId, publication_id:publicationId}},{transaction})
+    try {
+      let currentVote = await models.Votes.destroy({ where: { user_id: userId, publication_id: publicationId } }, { transaction })
       if (currentVote) {
         await transaction.commit()
-        return {message: 'Vote Removed'}
+        return { message: 'Vote Removed' }
       }
-      else{
+      else {
         currentVote = await models.Votes.create({
-          user_id: userId, 
-          publication_id:publicationId
-        },{transaction})
+          user_id: userId,
+          publication_id: publicationId
+        }, { transaction })
         await transaction.commit()
-        return {message: 'Vote Created'}
+        return { message: 'Vote Created' }
       }
-      
-    } catch (error){
+
+    } catch (error) {
       await transaction.rollback()
       throw error
     }
   }
-  
-  async createPublication({title, description, content, reference_link, publication_type_id, user_id, tags}) {
+
+  async createPublication({ title, description, content, reference_link, publication_type_id, user_id, tags }) {
     const transaction = await models.sequelize.transaction()
     try {
       let newPublication = await models.Publications.create({
@@ -120,41 +122,42 @@ class PublicationsService {
         content,
         reference_link,
         city_id: 1
-      },{transaction})
-      if (tags){
+      }, { transaction })
+      if (tags) {
         let arrayTags = tags.split(',')
         let findedTags = await models.Tags.findAll({
-          where:{id: arrayTags},
+          where: { id: arrayTags },
           attributes: ['id'],
           raw: true
         })
-        if (findedTags.length > 0){
+        if (findedTags.length > 0) {
           let tags_ids = findedTags.map(tag => tag['id'])
-          await newPublication.setTags(tags_ids, {transaction})
+          await newPublication.setTags(tags_ids, { transaction })
         }
       }
       //await newPublication.addUser(user_id, { through: { vote: true } },{transaction})
-      await newPublication.setVote(user_id,{transaction})
+      await newPublication.setVote(user_id, { transaction })
       await transaction.commit()
-      return newPublication 
-    } catch ( error ) {
+      return { message: 'successfully created' };
+    } catch (error) {
       await transaction.rollback()
-      throw error 
+      throw error
     }
   }
+
 
   async getPublication(id) {
     const publication = await models.Publications.findOne({
       where: { id },
-      attributes:{
+      attributes: {
         include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
       },
       include: [
         { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
         { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
         { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] }  }, // update alias name
-        { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] }  }, // update alias name
+        { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
+        { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
       ],
     });
     if (!publication) {
