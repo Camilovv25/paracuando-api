@@ -2,19 +2,13 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
+    const transaction = await queryInterface.sequelize.transaction()
     try {
       await queryInterface.createTable('votes', {
-        // id: {
-        //   allowNull: false,
-        //   autoIncrement: true,
-        //   primaryKey: true,
-        //   type: Sequelize.INTEGER
-        // },
         publication_id: {
-          type: Sequelize.UUID,
           allowNull: false,
           primaryKey: true,
+          type: Sequelize.UUID,
           foreignKey: true,
           references: {
             model: 'publications',
@@ -24,40 +18,43 @@ module.exports = {
           onDelete: 'CASCADE'
         },
         user_id: {
-          type: Sequelize.UUID,
           allowNull: false,
           primaryKey: true,
-          foreignKey: true, 
+          type: Sequelize.UUID,
+          foreignKey: true,
           references: {
             model: 'users',
             key: 'id'
           },
           onUpdate: 'CASCADE',
-          onDelete: 'CASCADE'
+          onDelete: 'RESTRICT'
         },
-        created_at: {
+        createdAt: {
           allowNull: false,
-          type: Sequelize.DATE
+          type: Sequelize.DATE,
+          field: 'created_at'
         },
-        updated_at: {
+        updatedAt: {
           allowNull: false,
-          type: Sequelize.DATE
+          type: Sequelize.DATE,
+          field: 'updated_at'
         }
-      }, {transaction});
-      await transaction.commit();
+      }, { transaction });
+
+      await transaction.commit()
     } catch (error) {
-      await transaction.rollback();
-      throw error 
+      await transaction.rollback()
+      throw error
     }
   },
   async down(queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
+    const transaction = await queryInterface.sequelize.transaction()
     try {
-      await queryInterface.dropTable('votes',{transaction});
-      await transaction.commit();
+      await queryInterface.dropTable('votes', { transaction })
+      await transaction.commit()
     } catch (error) {
-      await transaction.rollback();
-      throw error 
+      await transaction.rollback()
+      throw error
     }
   }
 };

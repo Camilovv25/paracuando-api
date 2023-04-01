@@ -18,6 +18,7 @@ module.exports = {
 },
 test: {
     use_env_variable: 'DATABASE_URI_TEST',
+    logging: false,
     define: {
         timestamps: true,
         underscored: true,
@@ -34,10 +35,10 @@ test: {
 production: {
     use_env_variable: 'DATABASE_URI_PROD',
     dialectOptions: {
-        ssl: {
-            require: true,
-            rejectUnauthorized: false,
-        },
+        // ssl: {
+        //     require: true,
+        //     rejectUnauthorized: false,
+        // },
         useUTC: true,
     },
     define: {

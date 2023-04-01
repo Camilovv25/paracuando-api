@@ -34,7 +34,7 @@ const addUser = async (request, response, next) => {
 const getUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const user = await usersService.getUser(id);
+    const user = await usersService.getAuthUserOr404(id);
     return res.json({ results: user });
   } catch (error) {
     next(error);
@@ -89,13 +89,27 @@ const addImageToUser = async (req, res, next) => {
 
 const getUserPublications = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { page, filters } = req.query;
-    const user = await usersService.getUserByPublication(id, page, filters);
-    return res.json({ results: user });
+    const query = req.query
+    const { page , size } = query;
+    const { limit, offset } = getPagination(page, size);
+    query.limit = limit
+    query.offset = offset
+    const users = await usersService.getUserByPublication(query);
+
+    const results = getPagingData(users, page, limit);
+
+    return res.json({ results });
   } catch (error) {
     next(error);
   }
+  // try {
+  //   const { id } = req.params;
+  //   const { page, filters } = req.query;
+  //   const user = await usersService.getUserByPublication(id, page, filters);
+  //   return res.json({ results: user });
+  // } catch (error) {
+  //   next(error);
+  // }
 };
 
 

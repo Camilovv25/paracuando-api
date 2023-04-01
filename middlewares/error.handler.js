@@ -70,6 +70,7 @@ function ormErrorHandler(err, req, res, next) {
     err instanceof ConnectionTimedOutError ||
     err instanceof InvalidConnectionError
   ) {
+    console.log('----ESTE ES EL ERROR',err.message)
     return res.status(409).json({
       statusCode: 409,
       name: err.name,
@@ -78,6 +79,7 @@ function ormErrorHandler(err, req, res, next) {
   }
 
   if (err instanceof ValidationError) {
+    console.log('----ESTE ES EL ERROR',err.message)
     return res.status(409).json({
       statusCode: 409,
       name: err.name,
@@ -90,6 +92,7 @@ function ormErrorHandler(err, req, res, next) {
       err instanceof UnknownConstraintError ||
       err instanceof  AggregateError ||
       err instanceof UniqueConstraintError) {
+    console.log('----ESTE ES EL ERROR',err.message)
     return res.status(409).json({
       statusCode: 409,
       name: err.name,
@@ -99,6 +102,7 @@ function ormErrorHandler(err, req, res, next) {
   }
 
   if (err instanceof EmptyResultError) {
+    console.log('----ESTE ES EL ERROR',err.message)
     return res.status(409).json({
       statusCode: 409,
       name: err.name,
@@ -108,6 +112,7 @@ function ormErrorHandler(err, req, res, next) {
   }
 
   if (err instanceof DatabaseError) {
+    console.log('----ESTE ES EL ERROR',err.message)
     return res.status(409).json({
       statusCode: err.status,
       name: err.name,
@@ -121,6 +126,7 @@ function ormErrorHandler(err, req, res, next) {
   }
 
   if (err instanceof BaseError) {
+    console.log('----ESTE ES EL ERROR', err.message)
     return res.status(409).json({
       statusCode: err.status,
       name: err.name,

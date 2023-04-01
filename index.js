@@ -68,7 +68,11 @@ routerModels(app);
 routerErrorHandler(app)
 
 
+if (process.env.NODE_ENV != 'test'){
+  
+  app.listen(PORT, () => {
+    console.log(`Server on PORT: ${PORT}`)
+  })
+}
 
-app.listen(PORT, () => {
-  console.log(`Server on PORT: ${PORT}`)
-})
+module.exports = {app}

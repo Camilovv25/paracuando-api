@@ -10,11 +10,12 @@ class PublicationsService {
     const options = {
       where: {},
       include: [
-        { model: models.Users, as: 'user', attributes: {exclude:['email_verified','password','token']}},
-        { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
+        // { model: models.Users, as: 'user', attributes: {exclude:['email_verified','password','token']}},
+        // { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
+        // { model: models.PublicationsTypes, as:'publication_type'},
       ],
       attributes: {
-        exclude: ['content'],
+        // exclude: ['content'],
         include: [
           [cast(literal(
             '(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'
@@ -154,11 +155,11 @@ class PublicationsService {
         include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
       },
       include: [
-        { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
-        { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
-        { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
+        // { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
+        // { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
+        // { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
+        // { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
+        // { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
       ],
     });
     if (!publication) {

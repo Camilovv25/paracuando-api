@@ -16,9 +16,9 @@ async function isAdminRole(req, res, next) {
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      return res.status(401).json({
+      return res.status(403).json({
         error: {
-          status: 401,
+          status: 403,
           message: 'User is not authorized to perform this action',
           details: 'User does not have admin role' //Error while checking user roles
         }
@@ -151,7 +151,7 @@ function isTheSameUserUpdated(req, res, next) {
       'country_id',
       'code_phone',
       'phone',
-      'tags'
+      'interests'
     ];
     const fieldsToUpdate = Object.keys(req.body);
 
@@ -187,9 +187,9 @@ function isTheSameUserUpdated(req, res, next) {
     next();
   } else {
 
-    res.status(401).json({
+    res.status(403).json({
       error: {
-        status: 401,
+        status: 403,
         message: 'User is not authorized to perform this action',
         details: 'User is not the same user'
       }
@@ -206,9 +206,9 @@ async function isAdminUpdate(req, res, next) {
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      return res.status(401).json({
+      return res.status(403).json({
         error: {
-          status: 401,
+          status: 403,
           message: 'User is not authorized to perform this action',
           details: 'User does not have admin role'
         }
@@ -256,9 +256,9 @@ async function isAdminCreateTag(req, res, next) {
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      return res.status(401).json({
+      return res.status(403).json({
         error: {
-          status: 401,
+          status: 403,
           message: 'User is not authorized to perform this action',
           details: 'User does not have admin role'
         }

@@ -75,7 +75,7 @@ const updateVote = async(req, res, next) => {
     const userId = payload.id
     const publicationId = req.params.id
     const message = await publicationsService.addOrSubtractVote(userId, publicationId)
-    return res.json(message)
+    return res.status(201).json(message)
   } catch (error){
     next(error)
   }

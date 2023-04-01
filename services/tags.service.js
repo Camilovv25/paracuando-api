@@ -63,14 +63,21 @@ class TagsService {
 
 
   async createTag({ name, description }) {
-    let transaction;
+    let transaction = await models.sequelize.transaction();
     try {
-      transaction = await models.sequelize.transaction();
-      const lastTag = await models.Tags.findOne({ order: [['id', 'DESC']] });
-      const nextId = lastTag ? lastTag.id + 1 : 1;
-      await models.Tags.create({ id: nextId, name, description, image_url: '' }, { transaction });
+      
+      // const lastTag = await models.Tags.findOne({ order: [['id', 'DESC']] });
+      // const nextId = lastTag ? lastTag.id + 1 : 1;
+      // await models.Tags.create({ id: nextId, name, description, image_url:null}, { transaction });
+      const newTag = await models.Tags.create({
+        name, 
+        description, 
+        image_url:'null'
+      },
+      { transaction });
       await transaction.commit();
-      return { message: 'Tag Added' };
+      // return { message: 'Tag Added' };
+      return newTag;
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;
@@ -108,7 +115,7 @@ class TagsService {
       await transaction.commit();
       return tag;
     } catch (error) {
-      await transaction.rollBack();
+      await transaction.rollback();
       throw error
     }
   }

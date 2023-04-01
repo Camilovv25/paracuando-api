@@ -2,28 +2,30 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
+    const transaction = await queryInterface.sequelize.transaction()
     try {
       await queryInterface.createTable('publications', {
         id: {
-          type: Sequelize.UUID,
-          defaultValue: Sequelize.UUIDV4,
           allowNull: false,
-          primaryKey: true
+          defaultValue: Sequelize.UUIDV4,
+          primaryKey: true,
+          type: Sequelize.UUID
         },
         user_id: {
-          type: Sequelize.UUID,
           allowNull: false,
+          type: Sequelize.UUID,
+          foreignKey: true,
           references: {
-            model:'users',
+            model: 'users',
             key: 'id'
           },
           onUpdate: 'CASCADE',
           onDelete: 'RESTRICT'
         },
         publication_type_id: {
-          type: Sequelize.INTEGER,
           allowNull: false,
+          type: Sequelize.INTEGER,
+          foreignKey: true,
           references: {
             model: 'publications_types',
             key: 'id'
@@ -32,8 +34,9 @@ module.exports = {
           onDelete: 'RESTRICT'
         },
         city_id: {
-          type: Sequelize.INTEGER,
           allowNull: false,
+          type: Sequelize.INTEGER,
+          foreignKey: true,
           references: {
             model: 'cities',
             key: 'id'
@@ -42,20 +45,20 @@ module.exports = {
           onDelete: 'RESTRICT'
         },
         title: {
-          type: Sequelize.STRING,
-          allowNull: false
+          allowNull: false,
+          type: Sequelize.STRING
         },
         description: {
-          type: Sequelize.STRING,
-          allowNull: false
+          allowNull: false,
+          type: Sequelize.STRING
         },
         content: {
-          type: Sequelize.TEXT,
-          allowNull: false
+          allowNull: false,
+          type: Sequelize.TEXT
         },
         reference_link: {
-          type: Sequelize.TEXT,
-          allowNull: false
+          allowNull: false,
+          type: Sequelize.TEXT
         },
         createdAt: {
           allowNull: false,
@@ -67,23 +70,22 @@ module.exports = {
           type: Sequelize.DATE,
           field: 'updated_at'
         }
-      },{transaction});
+      }, { transaction });
+
       await transaction.commit()
     } catch (error) {
       await transaction.rollback()
-      throw error 
+      throw error
     }
-    
   },
   async down(queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
+    const transaction = await queryInterface.sequelize.transaction()
     try {
-      await queryInterface.dropTable('publications',{transaction});
-      await transaction.commit();
-    } catch(error){
-      await transaction.rollback();
-      throw error 
+      await queryInterface.dropTable('publications', { transaction })
+      await transaction.commit()
+    } catch (error) {
+      await transaction.rollback()
+      throw error
     }
-    
   }
 };

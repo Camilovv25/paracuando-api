@@ -88,8 +88,8 @@ class UsersService {
       if (!user) throw new CustomError('Not found user', 404, 'Not Found')
       let updatedUser = await user.update(obj, { transaction })
 
-      if (obj.tags){
-        let arrayTags = obj.tags.split(',')
+      if (obj.interests){
+        let arrayTags = obj.interests.split(',')
         let findedTags = await models.Tags.findAll({
           where: {id: arrayTags},
           attributes: ['id'],
@@ -206,7 +206,8 @@ class UsersService {
         id:{
           [Op.in]: publicationsIds
         }
-      }
+      },
+      
     }) 
     return results
     // return {
@@ -234,10 +235,10 @@ class UsersService {
     }
   }
 
-  async getUserByPublication(id, page = 1, filters = {}) {
-    const limit = 10; // Cantidad de publicaciones por página
-    const offset = (page - 1) * limit;
-
+  async getUserByPublication(query) {
+  // async getUserByPublication(id, page = 1, filters = {}) {
+    // const limit = 10; // Cantidad de publicaciones por página
+    // const offset = (page - 1) * limit;
     const options = {
       where: { user_id: id },
       include: [
@@ -245,43 +246,49 @@ class UsersService {
         { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
         { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
         { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.Tags, as: 'publication_tag', attributes: { exclude: ['created_at', 'updated_at'] } },
+        { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] } },
       ],
-      limit,
-      offset,
+      // limit,
+      // offset,
       order: [['created_at', 'DESC']],
     };
 
-    if (filters.id) {
-      options.where.id = filters.id;
+    const {limit, offset} = query
+    if (limit && offset) {
+      options.limit = limit
+      options.offset = offset
+    }
+    const {id} = query
+    if (id) {
+      options.where.id = id;
+    }
+    const {title} = query
+    if (title) {
+      options.where.title = { [Op.iLike]: `%${title}%` };
+    }
+    const {description} = query
+    if (description) {
+      options.where.description = { [Op.iLike]: `%${description}%` };
+    }
+    const {content} = query
+    if (content) {
+      options.where.content = { [Op.iLike]: `%${content}%` };
+    }
+    const {reference_link} = query
+    if (reference_link) {
+      options.where.reference_link = { [Op.iLike]: `%${reference_link}%` };
     }
 
-    if (filters.title) {
-      options.where.title = { [Op.iLike]: `%${filters.title}%` };
-    }
+    const userPublications = await models.Publications.findAndCountAll(options);
 
-    if (filters.description) {
-      options.where.description = { [Op.iLike]: `%${filters.description}%` };
-    }
+    if (userPublications.count === 0) throw new CustomError('Not found User', 404, 'Not Found');
+    return userPublications
+    // const totalPages = Math.ceil(publications.count / limit);
 
-    if (filters.content) {
-      options.where.content = { [Op.iLike]: `%${filters.content}%` };
-    }
-
-    if (filters.reference_link) {
-      options.where.reference_link = { [Op.iLike]: `%${filters.reference_link}%` };
-    }
-
-    const publications = await models.Publications.findAndCountAll(options);
-
-    if (publications.count === 0) throw new CustomError('Not found User', 404, 'Not Found');
-
-    const totalPages = Math.ceil(publications.count / limit);
-
-    return {
-      publications: publications.rows,
-      totalPages,
-    };
+    // return {
+    //   publications: publications.rows,
+    //   totalPages,
+    // };
   }
 
 
