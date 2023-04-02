@@ -10,9 +10,10 @@ class PublicationsService {
     const options = {
       where: {},
       include: [
-        // { model: models.Users, as: 'user', attributes: {exclude:['email_verified','password','token']}},
-        // { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
-        // { model: models.PublicationsTypes, as:'publication_type'},
+        { model: models.Users, as: 'user', attributes:  ['first_name', 'last_name', 'image_url']},
+        { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
+        { model: models.PublicationsTypes, as:'publication_type'},
+        { model: models.PublicationsImages, as:'images'},
       ],
       attributes: {
         // exclude: ['content'],
@@ -95,7 +96,7 @@ class PublicationsService {
       let currentVote = await models.Votes.destroy({ where: { user_id: userId, publication_id: publicationId } }, { transaction })
       if (currentVote) {
         await transaction.commit()
-        return { message: 'Vote Removed' }
+        return { message: 'Vote Removed', status: 200 }
       }
       else {
         currentVote = await models.Votes.create({
@@ -103,7 +104,7 @@ class PublicationsService {
           publication_id: publicationId
         }, { transaction })
         await transaction.commit()
-        return { message: 'Vote Created' }
+        return { message: 'Vote Created', status: 201 }
       }
 
     } catch (error) {
@@ -155,11 +156,10 @@ class PublicationsService {
         include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
       },
       include: [
-        // { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
-        // { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
-        // { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
-        // { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
-        // { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
+        { model: models.Users, as: 'user', attributes:  ['first_name', 'last_name', 'image_url']},
+        { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
+        { model: models.PublicationsTypes, as:'publication_type'},
+        { model: models.PublicationsImages, as:'images'},
       ],
     });
     if (!publication) {

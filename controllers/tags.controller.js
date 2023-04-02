@@ -65,10 +65,10 @@ const updateTag = async (req, res, next) => {
 
 const deleteTag = async(req, res, next) => {
   try{
-    const {id} = req.params;
+    const {id} = req.params
     const tagRemoved = await tagsService.removeTag(id);
     // return res.json({message: 'Tag Removed' });
-    return res.json({tagRemoved });
+    return res.json({message: 'removed', results:tagRemoved});
   } catch (error) {
     next(error)
   }

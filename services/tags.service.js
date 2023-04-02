@@ -72,7 +72,7 @@ class TagsService {
       const newTag = await models.Tags.create({
         name, 
         description, 
-        image_url:'null'
+        image_url: null
       },
       { transaction });
       await transaction.commit();
@@ -109,9 +109,9 @@ class TagsService {
   async removeTag(id) {
     const transaction = await models.sequelize.transaction();
     try {
-      let tag = await models.Tags.findByPk(id);
+      let tag = await models.Tags.findByPk(id, {transaction});
       if (!tag) throw new CustomError('Not fount Tag', 404, 'NotFound');
-      await tag.destroy({ transaction });
+      await models.Tags.destroy({where: {id}}, {transaction});
       await transaction.commit();
       return tag;
     } catch (error) {

@@ -74,8 +74,8 @@ const updateVote = async(req, res, next) => {
     const payload = jwt.decode(token)
     const userId = payload.id
     const publicationId = req.params.id
-    const message = await publicationsService.addOrSubtractVote(userId, publicationId)
-    return res.status(201).json(message)
+    const results = await publicationsService.addOrSubtractVote(userId, publicationId)
+    return res.status(results.status).json(results.message)
   } catch (error){
     next(error)
   }

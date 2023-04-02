@@ -118,9 +118,9 @@ async function isAdminOrSameUser(req, res, next) {
       const isAdmin = authenticatedUser.profiles && authenticatedUser.profiles.some(profile => profile.role.name === 'admin');
 
       if (!isAdmin) {
-        return res.status(401).json({
+        return res.status(403).json({
           error: {
-            status: 401,
+            status: 403,
             message: 'User is not authorized to perform this action',
           }
         });
