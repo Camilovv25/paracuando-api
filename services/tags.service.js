@@ -67,8 +67,8 @@ class TagsService {
     try {
       transaction = await models.sequelize.transaction();
       const lastTag = await models.Tags.findOne({ order: [['id', 'DESC']] });
-      const nextId = lastTag ? lastTag.id + 1 : 1;
-      await models.Tags.create({ id: nextId, name, description, image_url: '' }, { transaction });
+      //const nextId = lastTag ? lastTag.id + 1 : 1;
+      await models.Tags.create({ id: name, description, image_url: null }, { transaction });
       await transaction.commit();
       return { message: 'Tag Added' };
     } catch (error) {

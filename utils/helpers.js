@@ -59,8 +59,58 @@ const getPagingData = (data, page, limit) => {
 };
 
 
+const setRawWhereOperatorCount = (
+  query,
+  operators = {
+    get: '>=',
+    gt: '>',
+    lte: '<=',
+    lt: '<',
+    eq: '=',
+  }
+) => {
+  let operator = query.split(',', 1).pop();
+  let querySplited = query.split(',');
+
+  if (!Array.isArray(querySplited))
+    throw new CustomError(
+      'Not Array!',
+      500,
+      'Not Array in Checker'
+    );
+
+  if (querySplited.length !== 2)
+    throw new CustomError(
+      'Only accepts two arguments!', 400,
+      'Operator Query Format'
+    );
+
+  if (!(operator in operators))
+    throw new CustomError(
+      `Operator Not Allowed for this filter!: Allowed: ${Object.keys(
+        operators
+      )}`,
+      400,
+      'Bad Request'
+    );
+
+  if (!/^\d+$/.test(querySplited[1]))
+    throw new CustomError(
+      'Not a number for the value filter!',
+      400,
+      'Bad Request'
+    );
+
+  return [operators[operator], querySplited[1]];
+};
+
+
+
+
+
 module.exports = {
   CustomError,
   getPagination,
   getPagingData,
+  setRawWhereOperatorCount
 };

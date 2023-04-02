@@ -4,14 +4,17 @@ const { getPublicationsTypes, getPublicationTypeOr404, updatePublicationType } =
 
 const { isAdminUpdate } = require('../middlewares/auth.checkers')
 
+const passport = require('../libs/passport');
 
+
+const auth = passport.authenticate('jwt', { session: false })
 
 router.route('/')
   .get(getPublicationsTypes)
 
 router.route('/:id')
   .get(getPublicationTypeOr404)
-  .put(isAdminUpdate, updatePublicationType)
+  .put(auth, isAdminUpdate, updatePublicationType)
 
 
 module.exports = router

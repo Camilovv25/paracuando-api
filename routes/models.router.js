@@ -19,11 +19,11 @@ function routerModels(app) {
   router.use('/auth', routesAuth);
   router.use('/users', auth, routesUsers);
   router.use('/publications', routesPublications);
-  router.use('/publications-types', auth, routesPublicationsTypes);
+  router.use('/publications-types', routesPublicationsTypes);
   router.use('/countries', auth, routesCountries);
   router.use('/tags', auth, routesTags);
   router.use('/states', auth, routesStates);
-  router.use('/cities', routesCities);
+  router.use('/cities', auth, routesCities);
   router.use('/roles', auth, roles);
 }
 module.exports = routerModels;

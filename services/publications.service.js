@@ -1,6 +1,6 @@
 const models = require('../database/models');
-const { CustomError } = require('../utils/helpers');
-const { Op, cast, literal } = require('sequelize');
+const { CustomError, setRawWhereOperatorCount } = require('../utils/helpers');
+const { Op, cast, literal, where } = require('sequelize');
 const uuid = require('uuid')
 
 class PublicationsService {
@@ -10,8 +10,8 @@ class PublicationsService {
     const options = {
       where: {},
       include: [
-        { model: models.Users, as: 'user', attributes: {exclude:['email_verified','password','token']}},
-        { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
+        { model: models.Users, as: 'user', attributes: { exclude: ['email_verified', 'password', 'token'] } },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
       ],
       attributes: {
         exclude: ['content'],
@@ -73,16 +73,22 @@ class PublicationsService {
     const { tags } = query
     if (tags) {
       const arrayTags = tags.split(',')
-      options.where['$tags.id$'] = {[Op.in]:arrayTags}
+      options.where['$tags.id$'] = { [Op.in]: arrayTags }
       //options.include[1].where.id = {[Op.in]:arrayTags}
     }
 
-    // const {votes_count} = query
-    // if (votes_count){
-    //   const condition = votes_count.split(',')
-    //   options.having.votes_count = {[ eval(`Op.${condition[0]}`)]: condition[1]}
+    const { votes_count } = query;
+    if (votes_count) {
 
-    // }
+      let [operator, value] = setRawWhereOperatorCount(votes_count)
+      options.where.votes_count = where(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'),
+        operator,
+        value
+      )
+    }
+
+    options.distinct = true
+
     const publications = await models.Publications.findAndCountAll(options);
     return publications;
   }

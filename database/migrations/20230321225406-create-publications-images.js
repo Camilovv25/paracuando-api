@@ -1,61 +1,56 @@
 'use strict';
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-
   async up(queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
+    const transaction = await queryInterface.sequelize.transaction()
     try {
       await queryInterface.createTable('publications_images', {
-        // id: {
-        //   allowNull: false,
-        //   autoIncrement: true,
-        //   primaryKey: true,
-        //   type: Sequelize.INTEGER
-        // },
         publication_id: {
-          type: Sequelize.UUID,
           allowNull: false,
           primaryKey: true,
+          type: Sequelize.UUID,
           foreignKey: true,
           references: {
             model: 'publications',
             key: 'id'
           },
           onUpdate: 'CASCADE',
-          onDelete: 'CASCADE'
+          onDelete: 'RESTRICT'
         },
         image_url: {
-          type: Sequelize.TEXT,
           allowNull: false,
-          primaryKey: true,
+          type: Sequelize.TEXT,
+          primaryKey: true
         },
         order: {
-          type: Sequelize.INTEGER,
-          allowNull: false
-        },
-        created_at: {
           allowNull: false,
-          type: Sequelize.DATE
+          type: Sequelize.INTEGER
         },
-        updated_at: {
+        createdAt: {
           allowNull: false,
-          type: Sequelize.DATE
+          type: Sequelize.DATE,
+          field: 'created_at'
+        },
+        updatedAt: {
+          allowNull: false,
+          type: Sequelize.DATE,
+          field: 'updated_at'
         }
-      },{transaction});
-      await transaction.commit();
+      }, { transaction });
+
+      await transaction.commit()
     } catch (error) {
-      await transaction.rollback();
+      await transaction.rollback()
       throw error
     }
-
   },
   async down(queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
+    const transaction = await queryInterface.sequelize.transaction()
     try {
-      await queryInterface.dropTable('publications_images',{transaction});
-      await transaction.commit();
+      await queryInterface.dropTable('publications_images', { transaction })
+      await transaction.commit()
     } catch (error) {
-      await transaction.rollback();
+      await transaction.rollback()
       throw error
     }
   }

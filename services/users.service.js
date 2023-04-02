@@ -223,16 +223,41 @@ class UsersService {
     let transaction;
     try {
       transaction = await models.sequelize.transaction();
-      let tag = await models.User.findOne({ where: { id } }, { transaction });
+      let tag = await models.Users.findOne({ where: { id } }, { transaction });
       if (!tag) throw new Error('User not found');
-      await models.User.update({ image_url }, { where: { id }, transaction });
+      await models.Users.update({ image_url }, { where: { id }, transaction });
       await transaction.commit();
-      return 'Image added successfully';
+      return { message: 'Image Added' };
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;
     }
   }
+
+
+
+  async deleteImageFromUser(id) {
+    let transaction;
+    try {
+      transaction = await models.sequelize.transaction();
+      const user = await models.Users.findOne({ where: { id } }, { transaction });
+      if (!user) throw new Error('User not found');
+      const imageUrl = user.image_url;
+      await models.Users.update({ image_url: null }, { where: { id }, transaction });
+      await transaction.commit();
+      // Si deseas, también puedes eliminar la imagen del servidor utilizando el siguiente código:
+      // await deleteImageFromServer(imageUrl);
+      return { message: 'Image deleted' };
+    } catch (error) {
+      if (transaction) await transaction.rollback();
+      throw error;
+    }
+  }
+
+
+
+
+
 
   async getUserByPublication(id, page = 1, filters = {}) {
     const limit = 10; // Cantidad de publicaciones por página

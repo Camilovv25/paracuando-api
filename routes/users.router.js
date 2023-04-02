@@ -1,6 +1,6 @@
 const router = require('express').Router();
 
-const { getUsers, getUser, updateUser, getVotesByUser, getUserPublications } = require('../controllers/users.controller');
+const { getUsers, getUser, updateUser, getVotesByUser, getUserPublications, addImageToUser, deleteImageFromUser } = require('../controllers/users.controller');
 const { isAdminRole, isTheSameUserUpdated, isAdminOrSameUserOrAnyUser } = require('../middlewares/auth.checkers');
 
 
@@ -18,9 +18,11 @@ router.route('/:id/votes')
 router.route('/:id/publications')
   .get(getUserPublications)
 
-//router.post('/:id/add-image');
+router.route('/:id/add-image')
+  .post(addImageToUser)
 
-//router.delete('/:id/remove-image');
+router.route('/:id/remove-image')
+  .delete(deleteImageFromUser)
 
 
 module.exports = router;

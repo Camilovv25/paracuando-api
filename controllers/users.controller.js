@@ -80,11 +80,22 @@ const addImageToUser = async (req, res, next) => {
     const { id } = req.params;
     const { image_url } = req.body;
     const result = await usersService.addImageToUser({ id, image_url });
-    return res.status(200).json({ message: result });
+    return res.status(200).json({ message: 'Image Added' });
   } catch (error) {
     next(error);
   }
 };
+
+
+const deleteImageFromUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const result = await usersService.deleteImageFromUser(id);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+}
 
 
 const getUserPublications = async (req, res, next) => {
@@ -110,5 +121,6 @@ module.exports = {
   removeUser,
   getVotesByUser,
   addImageToUser,
+  deleteImageFromUser,
   getUserPublications
 };
