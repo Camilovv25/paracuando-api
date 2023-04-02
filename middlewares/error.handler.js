@@ -21,7 +21,7 @@ function logErrors(err, req, res, next) {
 
 function errorHandler(err, req, res, next) {
   let { status } = err;
-
+  console.log('----ESTE ES EL ERROR',err.message)
   return res.status(status || 500).json({
     message: err.message,
     errorName: err.name,

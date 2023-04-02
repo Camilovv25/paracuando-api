@@ -150,8 +150,8 @@ class PublicationsService {
 
 
   async getPublication(id) {
-    const publication = await models.Publications.findOne({
-      where: { id },
+    const publication = await models.Publications.findByPk(id,{
+      // where: { id },
       attributes: {
         include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
       },
@@ -178,11 +178,19 @@ class PublicationsService {
   }
 
   async deletePublication(id) {
-    const publication = await models.Publications.destroy({ where: { id } });
-    if (!publication) {
-      throw new CustomError('Publication not found', 404, 'Not Found');
+    const transaction = await models.sequelize.transaction()
+    try{
+      const publication = await models.Publications.findByPk(id, {transaction})
+      if (!publication) {
+        throw new CustomError('Publication not found', 404, 'Not Found')
+      }
+      await publication.destroy({transaction})
+      await transaction.commit()
+      return publication
+    } catch (error) {
+      await transaction.rollback()
+      throw error
     }
-    return publication;
   }
 
 

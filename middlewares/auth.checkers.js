@@ -10,7 +10,7 @@ const publicationsService = new PublicationServices();
 // checks if the user has admin role
 async function isAdminRole(req, res, next) {
   const userId = req.user.id; // Obtener el ID del usuario de la petición
-  console.log(userId, 'here')
+  // console.log(userId, 'here')
 
 
   try {
@@ -59,7 +59,7 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
     };
 
     if (isAdmin || isCurrentUser) {
-      // user.setInterest()
+
       filteredUserInfo = {
         id: user.id,
         first_name: user.first_name,
