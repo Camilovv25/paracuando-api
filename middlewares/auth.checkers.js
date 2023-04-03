@@ -95,7 +95,6 @@ async function isAdminOrSameUser(req, res, next) {
 
     next();
   } catch (error) {
-    console.log(error);
     return res.status(404).json({
       error: {
         status: 404,

@@ -249,7 +249,7 @@ class UsersService {
           [cast(literal(
             '(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'
           ), 'integer'),
-            'votes_count'],
+          'votes_count'],
         ]
       },
 
