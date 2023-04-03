@@ -64,9 +64,9 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
       interests: user.interests
     };
 
-    res.json(filteredData);
     req.filteredData = filteredData;
-    
+    res.json(filteredData);
+
     next();
 
   } catch (error) {
@@ -83,6 +83,7 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
 
 
 
+
 //check if the user has admin role or is the same user who created the publication, to allow deleting a publication.
 async function isAdminOrSameUser(req, res, next) {
   const publicationId = req.params.id;
@@ -90,15 +91,6 @@ async function isAdminOrSameUser(req, res, next) {
 
   try {
     const publication = await publicationsService.getPublication(publicationId);
-
-    if (!publication) {
-      return res.status(404).json({
-        error: {
-          status: 404,
-          message: 'Publication not found',
-        }
-      });
-    }
 
     if (publication.user_id !== userId) {
       const authenticatedUser = await authService.getAuthenticatedUserFromRequest(req);
@@ -117,15 +109,14 @@ async function isAdminOrSameUser(req, res, next) {
     next();
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    return res.status(404).json({
       error: {
-        status: 500,
-        message: 'Server error',
+        status: 404,
+        message: 'Publication not found',
       }
     });
   }
 }
-
 
 
 //check if the user is the same user to allow to update his information.
