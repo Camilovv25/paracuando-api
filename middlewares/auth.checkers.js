@@ -35,22 +35,28 @@ async function isAdminRole(req, res, next) {
 }
 
 
-/*
+
 // checks if the user has admin role, is the same user or is any authenticated user. 
 async function isAdminOrSameUserOrAnyUser(req, res, next) {
   const userId = req.params.id;
 
   try {
-    const user = await authService.getAuthenticatedUser(userId);
-
     const authenticatedUser = await authService.getAuthenticatedUserFromRequest(req);
-
     const isAdmin = authenticatedUser.profiles && authenticatedUser.profiles.some(profile => profile.role.name === 'admin');
+    console.log('isAdmin:', isAdmin);
+    if (isAdmin) {
+      return next();
+    }
 
+    const user = await authService.getAuthenticatedUser(userId);
     const isCurrentUser = String(user.id) === String(authenticatedUser.id);
+    console.log('isCurrentUser:', isCurrentUser);
 
+    if (isCurrentUser) {
+      return next();
+    }
 
-    let filteredUserInfo = {
+    const filteredData = {
       id: user.id,
       first_name: user.first_name,
       last_name: user.last_name,
@@ -58,30 +64,11 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
       interests: user.interests
     };
 
-    if (isAdmin || isCurrentUser) {
-      // user.setInterest()
-      filteredUserInfo = {
-        id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        email_verified: user.email_verified,
-        code_phone: user.code_phone,
-        phone: user.phone,
-        image_url: user.image_url,
-        interests: user.interests
-      };
-    } else {
-      filteredUserInfo = {
-        id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        image_url: user.image_url,
-        interests: user.interests
-      };
-    }
+    res.json(filteredData);
+    req.filteredData = filteredData;
+    
+    next();
 
-    return res.json(filteredUserInfo);
   } catch (error) {
     return res.status(403).json({
       error: {
@@ -91,7 +78,9 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
     });
   }
 }
-*/
+
+
+
 
 
 //check if the user has admin role or is the same user who created the publication, to allow deleting a publication.
@@ -140,7 +129,7 @@ async function isAdminOrSameUser(req, res, next) {
 
 
 //check if the user is the same user to allow to update his information.
-function isTheSameUserUpdated(req, res, next) {
+function isTheSameUserForUpdate(req, res, next) {
   if (req.user && (req.user.id === req.params.id)) {
 
     const allowedFields = [
@@ -149,7 +138,7 @@ function isTheSameUserUpdated(req, res, next) {
       'country_id',
       'code_phone',
       'phone',
-      'tags'
+      'interests'
     ];
     const fieldsToUpdate = Object.keys(req.body);
 
@@ -168,7 +157,7 @@ function isTheSameUserUpdated(req, res, next) {
             country_id: '1',
             code_phone: '+57',
             phone: '3104589634',
-            tags: '1,2,3'
+            interests: '1,2,3'
           }
         }
       });
@@ -179,7 +168,8 @@ function isTheSameUserUpdated(req, res, next) {
       last_name: req.body.last_name,
       country_id: req.body.country_id,
       code_phone: req.body.code_phone,
-      phone: req.body.phone
+      phone: req.body.phone,
+      interests: req.body.interests
     };
 
     next();
@@ -333,10 +323,10 @@ async function isAdminAddImage(req, res, next) {
 
 module.exports = {
   isAdminRole,
-  //isAdminOrSameUserOrAnyUser,
+  isAdminOrSameUserOrAnyUser,
   isAdminUpdate,
   isAdminCreateTag,
   isAdminAddImage,
-  isTheSameUserUpdated,
+  isTheSameUserForUpdate,
   isAdminOrSameUser
 };

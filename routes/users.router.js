@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const { getUsers, getUser, updateUser, getVotesByUser, getUserPublications } = require('../controllers/users.controller');
-const { isAdminRole, isTheSameUserUpdated, isAdminOrSameUserOrAnyUser } = require('../middlewares/auth.checkers');
+const { isAdminRole, isTheSameUserForUpdate, isAdminOrSameUserOrAnyUser } = require('../middlewares/auth.checkers');
 
 
 
@@ -9,8 +9,8 @@ router.route('/')
   .get(isAdminRole, getUsers)
 
 router.route('/:id')
-  .get(getUser)
-  .put(isTheSameUserUpdated, updateUser)
+  .get(isAdminOrSameUserOrAnyUser, getUser)
+  .put(isTheSameUserForUpdate, updateUser)
 
 router.route('/:id/votes')
   .get(getVotesByUser)
