@@ -38,6 +38,7 @@ class UsersService {
     return users
   }
 
+
   async createAuthUser(obj) {
     const transaction = await models.sequelize.transaction()
     try {
@@ -68,6 +69,7 @@ class UsersService {
     return user
   }
 
+
   async getUser(id) {
     let user = await models.Users.findByPk(id, {
       attributes: { exclude: ['token', 'password', 'created_at', 'updated_at', 'username', 'country_id'] },
@@ -83,12 +85,30 @@ class UsersService {
     return user;
   }
 
+
+  async getUserForAnyUser(id) {
+    let user = await models.Users.findByPk(id, {
+      attributes: { exclude: ['token', 'password', 'created_at', 'updated_at', 'username', 'country_id', 'phone', 'email_verified', 'code_phone', 'email'] },
+      include: {
+        model: models.Tags,
+        as: 'interests',
+        through: { attributes: [] },
+        required: false,
+        where: {}
+      }
+    });
+    if (!user) throw new CustomError('Not found User', 404, 'Not Found');
+    return user;
+  }
+
+
   async findUserByEmailOr404(email) {
     if (!email) throw new CustomError('Email not given', 400, 'Bad Request')
     let user = await models.Users.findOne({ where: { email } }, { raw: true })
     if (!user) throw new CustomError('Not found User', 404, 'Not Found')
     return user
   }
+
 
   async updateUser(id, obj) {
     const transaction = await models.sequelize.transaction()
@@ -116,6 +136,7 @@ class UsersService {
       throw error
     }
   }
+
 
   async removeUser(id) {
     const transaction = await models.sequelize.transaction()
@@ -160,6 +181,7 @@ class UsersService {
     }
   }
 
+
   async verifiedTokenUser(id, token, exp) {
     const transaction = await models.sequelize.transaction()
     try {
@@ -186,6 +208,7 @@ class UsersService {
     }
   }
 
+
   async updatePassword(id, newPassword) {
     const transaction = await models.sequelize.transaction()
     try {
@@ -200,8 +223,6 @@ class UsersService {
       throw error
     }
   }
-
-
 
 
   async findVotesByUser(userId, query) {
@@ -252,6 +273,7 @@ class UsersService {
     }
   }
 
+
   async findUserPublication(userId, query) {
     const options = {
       where: { user_id: userId },
@@ -297,16 +319,7 @@ class UsersService {
 
     if (userPublications.count === 0) throw new CustomError('Not found User', 404, 'Not Found');
     return userPublications
-    // const totalPages = Math.ceil(publications.count / limit);
-
-    // return {
-    //   publications: publications.rows,
-    //   totalPages,
-    // };
   }
-
-
-
 
 }
 

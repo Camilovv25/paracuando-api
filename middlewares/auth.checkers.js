@@ -1,9 +1,11 @@
 const AuthService = require('../services/auth.service');
 const PublicationServices = require('../services/publications.service');
+const UsersServices = require('../services/users.service');
 
 
 const authService = new AuthService();
 const publicationsService = new PublicationServices();
+const userService = new UsersServices();
 
 
 
@@ -56,18 +58,8 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
       return next();
     }
 
-    const filteredData = {
-      id: user.id,
-      first_name: user.first_name,
-      last_name: user.last_name,
-      image_url: user.image_url,
-      interests: user.interests
-    };
-
-    req.filteredData = filteredData;
-    res.json(filteredData);
-
-    next();
+    const anyUser = await userService.getUserForAnyUser(userId);
+    res.status(200).json({ results: anyUser }); 
 
   } catch (error) {
     return res.status(403).json({
@@ -78,9 +70,6 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
     });
   }
 }
-
-
-
 
 
 
@@ -117,6 +106,7 @@ async function isAdminOrSameUser(req, res, next) {
     });
   }
 }
+
 
 
 //check if the user is the same user to allow to update his information.

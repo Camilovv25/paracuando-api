@@ -20,6 +20,7 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+
 const addUser = async (request, response, next) => {
   try {
     let { body } = request
@@ -41,6 +42,7 @@ const getUser = async (req, res, next) => {
   }
 };
 
+
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -50,6 +52,7 @@ const updateUser = async (req, res, next) => {
     next(error);
   }
 };
+
 
 const removeUser = async (req, res, next) => {
   try {
@@ -77,6 +80,7 @@ const getVotesByUser = async (req, res, next) => {
     next(error);
   }
 };
+
 
 const addImageToUser = async (req, res, next) => {
   try {
@@ -106,17 +110,7 @@ const getUserPublications = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-  // try {
-  //   const { id } = req.params;
-  //   const { page, filters } = req.query;
-  //   const user = await usersService.getUserByPublication(id, page, filters);
-  //   return res.json({ results: user });
-  // } catch (error) {
-  //   next(error);
-  // }
 };
-
-
 
 
 
