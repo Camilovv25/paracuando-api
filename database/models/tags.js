@@ -12,15 +12,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Tags.hasMany(models.PublicationsTags, {as: 'publicationTag', foreignKey: 'tag_id'});
-      Tags.hasMany(models.UsersTags, {as:'userTag', foreignKey: 'tag_id'});
+      Tags.hasMany(models.PublicationsTags, { as: 'publicationTag', foreignKey: 'tag_id' });
+      Tags.hasMany(models.UsersTags, { as: 'userTag', foreignKey: 'tag_id' });
     }
   }
   Tags.init({
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      allowNull: false,
       autoIncrement: true
     },
     name: {
@@ -33,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     image_url: {
       type: DataTypes.STRING,
-      allowNull: false 
+
     }
   }, {
     sequelize,

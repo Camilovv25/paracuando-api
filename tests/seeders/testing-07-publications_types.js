@@ -6,7 +6,7 @@ module.exports = {
     /* eslint-disable quotes */
     const transaction = await queryInterface.sequelize.transaction()
     try {
-      await queryInterface.bulkInsert('publication_types', [
+      await queryInterface.bulkInsert('publications_types', [
         {
           id: 1,
           name: 'Marcas y Tiendas',
@@ -40,7 +40,7 @@ module.exports = {
   async down(queryInterface, /*Sequelize*/) {
     const transaction = await queryInterface.sequelize.transaction()
     try {
-      await queryInterface.bulkDelete('publication_types', {
+      await queryInterface.bulkDelete('publications_types', {
         name: {
           [Op.or]: ['Marcas y Tiendas','Artistas y Conciertos','Torneos']
         }

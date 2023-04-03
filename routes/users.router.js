@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
-const { getUsers, getUser, updateUser, getVotesByUser, getUserPublications, addImageToUser, deleteImageFromUser } = require('../controllers/users.controller');
-const { isAdminRole, isTheSameUserUpdated, isAdminOrSameUserOrAnyUser } = require('../middlewares/auth.checkers');
+const { getUsers, getUser, updateUser, getVotesByUser, getUserPublications } = require('../controllers/users.controller');
+const { isAdminRole, isTheSameUserForUpdate, isAdminOrSameUserOrAnyUser } = require('../middlewares/auth.checkers');
 
 
 
@@ -10,7 +10,7 @@ router.route('/')
 
 router.route('/:id')
   .get(isAdminOrSameUserOrAnyUser, getUser)
-  .put(isTheSameUserUpdated, updateUser)
+  .put(isTheSameUserForUpdate, updateUser)
 
 router.route('/:id/votes')
   .get(getVotesByUser)
@@ -18,11 +18,9 @@ router.route('/:id/votes')
 router.route('/:id/publications')
   .get(getUserPublications)
 
-router.route('/:id/add-image')
-  .post(addImageToUser)
+//router.post('/:id/add-image');
 
-router.route('/:id/remove-image')
-  .delete(deleteImageFromUser)
+//router.delete('/:id/remove-image');
 
 
 module.exports = router;

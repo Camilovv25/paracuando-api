@@ -31,8 +31,8 @@ const getTag = async(req, res, next) => {
 const createTag = async (req, res, next) => {
   try {
     const { name, description } = req.body;
-    await tagsService.createTag({ name, description });
-    return res.status(201).json({ message: 'Tag Added' });
+    const tag = await tagsService.createTag({ name, description });
+    return res.status(201).json(tag);
   } catch (error) {
     next(error);
   }
@@ -65,9 +65,10 @@ const updateTag = async (req, res, next) => {
 
 const deleteTag = async(req, res, next) => {
   try{
-    const {id} = req.params;
-    await tagsService.removeTag(id);
-    return res.json({message: 'Tag Removed' });
+    const {id} = req.params
+    const tagRemoved = await tagsService.removeTag(id);
+    // return res.json({message: 'Tag Removed' });
+    return res.json({message: 'removed', results:tagRemoved});
   } catch (error) {
     next(error)
   }

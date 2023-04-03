@@ -56,7 +56,7 @@ class AuthService {
       where: { id },
       include: [
         { model: models.Profiles, as: 'profiles', include: [{ model: models.Roles, as: 'role' }] },
-        {model: models.Tags, as:'interest', through: {attributes:[]}}
+        { model: models.Tags, as: 'interests', through: { attributes: [] } }
       ]
     });
     if (!user) throw new CustomError('User not found', 404, 'NotFound');

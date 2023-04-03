@@ -1,33 +1,33 @@
 const AuthService = require('../services/auth.service');
 const PublicationServices = require('../services/publications.service');
+const UsersServices = require('../services/users.service');
 
 
 const authService = new AuthService();
 const publicationsService = new PublicationServices();
+const userService = new UsersServices();
 
 
 
 // checks if the user has admin role
 async function isAdminRole(req, res, next) {
-  const userId = req.user.id; // Obtener el ID del usuario de la petición
-  console.log(userId, 'here')
-
+  const userId = req.user.id;
 
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      return res.status(401).json({
+      return res.status(403).json({
         error: {
-          status: 401,
+          status: 403,
           message: 'User is not authorized to perform this action',
-          details: 'User does not have admin role' //Error while checking user roles
+          details: 'User does not have admin role'
         }
       });
     }
-    req.user = user; // Agregar el usuario encontrado a la petición
+    req.user = user;
     return next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
         message: 'User is not authorized to perform this action'
       }
@@ -42,52 +42,27 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
   const userId = req.params.id;
 
   try {
-    const user = await authService.getAuthenticatedUser(userId);
-
     const authenticatedUser = await authService.getAuthenticatedUserFromRequest(req);
-
     const isAdmin = authenticatedUser.profiles && authenticatedUser.profiles.some(profile => profile.role.name === 'admin');
 
-    const isCurrentUser = String(user.id) === String(authenticatedUser.id);
-
-
-    let filteredUserInfo = {
-      first_name: user.first_name,
-      last_name: user.last_name,
-      image_url: user.image_url,
-      interest: user.interest
-    };
-
-    if (isAdmin || isCurrentUser) {
-      // user.setInterest()
-      filteredUserInfo = {
-        id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        username: user.username,
-        email_verified: user.email_verified,
-        code_phone: user.code_phone,
-        phone: user.phone,
-        country_id: user.country_id,
-        image_url: user.image_url,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-        interest: user.interest
-      };
-    } else {
-      filteredUserInfo = {
-        first_name: user.first_name,
-        last_name: user.last_name,
-        image_url: user.image_url
-      };
+    if (isAdmin) {
+      return next();
     }
 
-    return res.json(filteredUserInfo);
+    const user = await authService.getAuthenticatedUser(userId);
+    const isCurrentUser = String(user.id) === String(authenticatedUser.id);
+
+    if (isCurrentUser) {
+      return next();
+    }
+
+    const anyUser = await userService.getUserForAnyUser(userId);
+    res.status(200).json({ results: anyUser });
+
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
-        status: 401,
+        status: 403,
         message: 'User is not authorized to perform this action',
       }
     });
@@ -104,23 +79,14 @@ async function isAdminOrSameUser(req, res, next) {
   try {
     const publication = await publicationsService.getPublication(publicationId);
 
-    if (!publication) {
-      return res.status(404).json({
-        error: {
-          status: 404,
-          message: 'Publication not found',
-        }
-      });
-    }
-
     if (publication.user_id !== userId) {
       const authenticatedUser = await authService.getAuthenticatedUserFromRequest(req);
       const isAdmin = authenticatedUser.profiles && authenticatedUser.profiles.some(profile => profile.role.name === 'admin');
 
       if (!isAdmin) {
-        return res.status(401).json({
+        return res.status(403).json({
           error: {
-            status: 401,
+            status: 403,
             message: 'User is not authorized to perform this action',
           }
         });
@@ -130,10 +96,10 @@ async function isAdminOrSameUser(req, res, next) {
     next();
   } catch (error) {
     console.log(error);
-    return res.status(500).json({
+    return res.status(404).json({
       error: {
-        status: 500,
-        message: 'Server error',
+        status: 404,
+        message: 'Publication not found',
       }
     });
   }
@@ -142,7 +108,7 @@ async function isAdminOrSameUser(req, res, next) {
 
 
 //check if the user is the same user to allow to update his information.
-function isTheSameUserUpdated(req, res, next) {
+function isTheSameUserForUpdate(req, res, next) {
   if (req.user && (req.user.id === req.params.id)) {
 
     const allowedFields = [
@@ -151,7 +117,7 @@ function isTheSameUserUpdated(req, res, next) {
       'country_id',
       'code_phone',
       'phone',
-      'tags'
+      'interests'
     ];
     const fieldsToUpdate = Object.keys(req.body);
 
@@ -170,7 +136,7 @@ function isTheSameUserUpdated(req, res, next) {
             country_id: '1',
             code_phone: '+57',
             phone: '3104589634',
-            tags: '1,2,3'
+            interests: '1,2,3'
           }
         }
       });
@@ -181,15 +147,16 @@ function isTheSameUserUpdated(req, res, next) {
       last_name: req.body.last_name,
       country_id: req.body.country_id,
       code_phone: req.body.code_phone,
-      phone: req.body.phone
+      phone: req.body.phone,
+      interests: req.body.interests
     };
 
     next();
   } else {
 
-    res.status(401).json({
+    res.status(403).json({
       error: {
-        status: 401,
+        status: 403,
         message: 'User is not authorized to perform this action',
         details: 'User is not the same user'
       }
@@ -206,9 +173,9 @@ async function isAdminUpdate(req, res, next) {
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      return res.status(401).json({
+      return res.status(403).json({
         error: {
-          status: 401,
+          status: 403,
           message: 'User is not authorized to perform this action',
           details: 'User does not have admin role'
         }
@@ -239,7 +206,7 @@ async function isAdminUpdate(req, res, next) {
 
     next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
         message: 'User is not authorized to perform this action'
       }
@@ -256,9 +223,9 @@ async function isAdminCreateTag(req, res, next) {
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      return res.status(401).json({
+      return res.status(403).json({
         error: {
-          status: 401,
+          status: 403,
           message: 'User is not authorized to perform this action',
           details: 'User does not have admin role'
         }
@@ -281,7 +248,7 @@ async function isAdminCreateTag(req, res, next) {
 
     next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
         message: 'User is not authorized to perform this action'
       }
@@ -298,9 +265,9 @@ async function isAdminAddImage(req, res, next) {
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      return res.status(401).json({
+      return res.status(403).json({
         error: {
-          status: 401,
+          status: 403,
           message: 'User is not authorized to perform this action',
           details: 'User does not have admin role'
         }
@@ -323,7 +290,7 @@ async function isAdminAddImage(req, res, next) {
 
     next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
         message: 'User is not authorized to perform this action'
       }
@@ -339,6 +306,6 @@ module.exports = {
   isAdminUpdate,
   isAdminCreateTag,
   isAdminAddImage,
-  isTheSameUserUpdated,
+  isTheSameUserForUpdate,
   isAdminOrSameUser
 };

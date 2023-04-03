@@ -1,6 +1,6 @@
 const models = require('../database/models');
-const { CustomError, setRawWhereOperatorCount } = require('../utils/helpers');
-const { Op, cast, literal, where } = require('sequelize');
+const { CustomError } = require('../utils/helpers');
+const { Op, cast, literal } = require('sequelize');
 const uuid = require('uuid')
 
 class PublicationsService {
@@ -10,11 +10,13 @@ class PublicationsService {
     const options = {
       where: {},
       include: [
-        { model: models.Users, as: 'user', attributes: { exclude: ['email_verified', 'password', 'token'] } },
+        { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
         { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
+        { model: models.PublicationsTypes, as: 'publication_type' },
+        { model: models.PublicationsImages, as: 'images' },
       ],
       attributes: {
-        exclude: ['content'],
+        // exclude: ['content'],
         include: [
           [cast(literal(
             '(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'
@@ -77,18 +79,12 @@ class PublicationsService {
       //options.include[1].where.id = {[Op.in]:arrayTags}
     }
 
-    const { votes_count } = query;
-    if (votes_count) {
+    // const {votes_count} = query
+    // if (votes_count){
+    //   const condition = votes_count.split(',')
+    //   options.having.votes_count = {[ eval(`Op.${condition[0]}`)]: condition[1]}
 
-      let [operator, value] = setRawWhereOperatorCount(votes_count)
-      options.where.votes_count = where(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'),
-        operator,
-        value
-      )
-    }
-
-    options.distinct = true
-
+    // }
     const publications = await models.Publications.findAndCountAll(options);
     return publications;
   }
@@ -100,7 +96,7 @@ class PublicationsService {
       let currentVote = await models.Votes.destroy({ where: { user_id: userId, publication_id: publicationId } }, { transaction })
       if (currentVote) {
         await transaction.commit()
-        return { message: 'Vote Removed' }
+        return { message: 'Vote Removed', status: 200 }
       }
       else {
         currentVote = await models.Votes.create({
@@ -108,7 +104,7 @@ class PublicationsService {
           publication_id: publicationId
         }, { transaction })
         await transaction.commit()
-        return { message: 'Vote Created' }
+        return { message: 'Vote Created', status: 201 }
       }
 
     } catch (error) {
@@ -154,17 +150,16 @@ class PublicationsService {
 
 
   async getPublication(id) {
-    const publication = await models.Publications.findOne({
-      where: { id },
+    const publication = await models.Publications.findByPk(id, {
+      // where: { id },
       attributes: {
         include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
       },
       include: [
-        { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
-        { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
-        { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] } }, // update alias name
+        { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
+        { model: models.PublicationsTypes, as: 'publication_type' },
+        { model: models.PublicationsImages, as: 'images' },
       ],
     });
     if (!publication) {
@@ -183,11 +178,19 @@ class PublicationsService {
   }
 
   async deletePublication(id) {
-    const publication = await models.Publications.destroy({ where: { id } });
-    if (!publication) {
-      throw new CustomError('Publication not found', 404, 'Not Found');
+    const transaction = await models.sequelize.transaction()
+    try {
+      const publication = await models.Publications.findByPk(id, { transaction })
+      if (!publication) {
+        throw new CustomError('Publication not found', 404, 'Not Found')
+      }
+      await publication.destroy({ transaction })
+      await transaction.commit()
+      return publication
+    } catch (error) {
+      await transaction.rollback()
+      throw error
     }
-    return publication;
   }
 
 

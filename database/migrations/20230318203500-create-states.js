@@ -2,9 +2,8 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-
-    const transaction = await queryInterface.sequelize.transaction();
-    try{    
+    const transaction = await queryInterface.sequelize.transaction()
+    try {
       await queryInterface.createTable('states', {
         id: {
           allowNull: false,
@@ -12,9 +11,15 @@ module.exports = {
           primaryKey: true,
           type: Sequelize.INTEGER
         },
-        country_id: {
-          type: Sequelize.INTEGER,
+        name: {
           allowNull: false,
+          type: Sequelize.STRING,
+          unique: true
+        },
+        country_id: {
+          allowNull: false,
+          type: Sequelize.INTEGER,
+          foreignKey: true,
           references: {
             model: 'countries',
             key: 'id'
@@ -22,36 +27,32 @@ module.exports = {
           onUpdate: 'CASCADE',
           onDelete: 'RESTRICT'
         },
-        name: {
-          type: Sequelize.STRING,
-          allowNull: false
-        },
         createdAt: {
           allowNull: false,
           type: Sequelize.DATE,
           field: 'created_at'
-          
         },
         updatedAt: {
           allowNull: false,
           type: Sequelize.DATE,
           field: 'updated_at'
         }
-      }, {transaction});
-      await transaction.commit();
-    } catch (error){
-      await transaction.rollback();
-      throw error;
+      }, { transaction });
+
+      await transaction.commit()
+    } catch (error) {
+      await transaction.rollback()
+      throw error
     }
   },
   async down(queryInterface, Sequelize) {
-    const transaction = await queryInterface.sequelize.transaction();
-    try{
-      await queryInterface.dropTable('states', {transaction});
-      await transaction.commit();
-    }catch (error) {
-      await transaction.rollback();
-      throw error;
+    const transaction = await queryInterface.sequelize.transaction()
+    try {
+      await queryInterface.dropTable('states', { transaction })
+      await transaction.commit()
+    } catch (error) {
+      await transaction.rollback()
+      throw error
     }
   }
 };

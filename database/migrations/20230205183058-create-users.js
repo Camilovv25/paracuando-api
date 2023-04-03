@@ -55,7 +55,7 @@ module.exports = {
           onDelete: 'RESTRICT'
         },
         image_url: {
-          type: Sequelize.STRING
+          type: Sequelize.TEXT
         },
         created_at: {
           allowNull: false,

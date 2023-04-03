@@ -20,6 +20,7 @@ const getUsers = async (req, res, next) => {
   }
 };
 
+
 const addUser = async (request, response, next) => {
   try {
     let { body } = request
@@ -41,6 +42,7 @@ const getUser = async (req, res, next) => {
   }
 };
 
+
 const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -50,6 +52,7 @@ const updateUser = async (req, res, next) => {
     next(error);
   }
 };
+
 
 const removeUser = async (req, res, next) => {
   try {
@@ -65,15 +68,19 @@ const removeUser = async (req, res, next) => {
 const getVotesByUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { page, size } = req.query;
+    const query = req.query
+    const { page = 1, size = 10 } = query;
     const { limit, offset } = getPagination(page, size);
-    const publications = await usersService.findVotesByUser(id, limit, offset);
+    query.limit = limit;
+    query.offset = offset
+    const publications = await usersService.findVotesByUser(id, query);
     const results = getPagingData(publications, page, limit)
-    return res.json(results);
+    return res.json({ results });
   } catch (error) {
     next(error);
   }
 };
+
 
 const addImageToUser = async (req, res, next) => {
   try {
@@ -100,16 +107,21 @@ const deleteImageFromUser = async (req, res, next) => {
 
 const getUserPublications = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { page, filters } = req.query;
-    const user = await usersService.getUserByPublication(id, page, filters);
-    return res.json({ results: user });
+    const query = req.query
+    const { id } = req.params
+    const { page, size } = query;
+    const { limit, offset } = getPagination(page, size);
+    query.limit = limit
+    query.offset = offset
+    const users = await usersService.findUserPublication(id, query);
+
+    const results = getPagingData(users, page, limit);
+
+    return res.json({ results });
   } catch (error) {
     next(error);
   }
 };
-
-
 
 
 

@@ -54,7 +54,7 @@ class TagsService {
       await tag.update(obj, { transaction });
       await transaction.commit();
 
-      return { message: 'Success Update' }; 
+      return { message: 'Success Update' };
     } catch (error) {
       await transaction.rollback();
       throw error;
@@ -63,14 +63,21 @@ class TagsService {
 
 
   async createTag({ name, description }) {
-    let transaction;
+    let transaction = await models.sequelize.transaction();
     try {
-      transaction = await models.sequelize.transaction();
-      const lastTag = await models.Tags.findOne({ order: [['id', 'DESC']] });
-      //const nextId = lastTag ? lastTag.id + 1 : 1;
-      await models.Tags.create({ id: name, description, image_url: null }, { transaction });
+
+      // const lastTag = await models.Tags.findOne({ order: [['id', 'DESC']] });
+      // const nextId = lastTag ? lastTag.id + 1 : 1;
+      // await models.Tags.create({ id: nextId, name, description, image_url:null}, { transaction });
+      const newTag = await models.Tags.create({
+        name,
+        description,
+        image_url: null
+      },
+      { transaction });
       await transaction.commit();
-      return { message: 'Tag Added' };
+      // return { message: 'Tag Added' };
+      return newTag;
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;
@@ -102,13 +109,13 @@ class TagsService {
   async removeTag(id) {
     const transaction = await models.sequelize.transaction();
     try {
-      let tag = await models.Tags.findByPk(id);
+      let tag = await models.Tags.findByPk(id, { transaction });
       if (!tag) throw new CustomError('Not fount Tag', 404, 'NotFound');
-      await tag.destroy({ transaction });
+      await models.Tags.destroy({ where: { id } }, { transaction });
       await transaction.commit();
       return tag;
     } catch (error) {
-      await transaction.rollBack();
+      await transaction.rollback();
       throw error
     }
   }

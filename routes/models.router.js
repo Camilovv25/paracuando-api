@@ -3,7 +3,7 @@ const routesUsers = require('./users.router');
 const routesAuth = require('./auth.routes');
 const roles = require('./roles.router');
 const routesPublicationsTypes = require('./publicationsTypes.router');
-const routesCountries = require ( './countries.router');
+const routesCountries = require('./countries.router');
 const routesTags = require('./tags.router');
 const routesStates = require('./states.router');
 const routesCities = require('./cities.router');
@@ -19,7 +19,7 @@ function routerModels(app) {
   router.use('/auth', routesAuth);
   router.use('/users', auth, routesUsers);
   router.use('/publications', routesPublications);
-  router.use('/publications-types', routesPublicationsTypes);
+  router.use('/publications-types', auth, routesPublicationsTypes);
   router.use('/countries', auth, routesCountries);
   router.use('/tags', auth, routesTags);
   router.use('/states', auth, routesStates);
@@ -27,4 +27,3 @@ function routerModels(app) {
   router.use('/roles', auth, roles);
 }
 module.exports = routerModels;
-

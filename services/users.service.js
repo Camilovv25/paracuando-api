@@ -1,6 +1,6 @@
 const { v4: uuid4 } = require('uuid');
 const models = require('../database/models')
-const { Op } = require('sequelize')
+const { Op, cast, literal } = require('sequelize')
 const { CustomError } = require('../utils/helpers');
 const { hashPassword } = require('../libs/bcrypt');
 
@@ -38,6 +38,7 @@ class UsersService {
     return users
   }
 
+
   async createAuthUser(obj) {
     const transaction = await models.sequelize.transaction()
     try {
@@ -68,11 +69,38 @@ class UsersService {
     return user
   }
 
+
   async getUser(id) {
-    let user = await models.Users.findByPk(id)
-    if (!user) throw new CustomError('Not found User', 404, 'Not Found')
-    return user
+    let user = await models.Users.findByPk(id, {
+      attributes: { exclude: ['token', 'password', 'created_at', 'updated_at', 'username', 'country_id'] },
+      include: {
+        model: models.Tags,
+        as: 'interests',
+        through: { attributes: [] },
+        required: false,
+        where: {}
+      }
+    });
+    if (!user) throw new CustomError('Not found User', 404, 'Not Found');
+    return user;
   }
+
+
+  async getUserForAnyUser(id) {
+    let user = await models.Users.findByPk(id, {
+      attributes: { exclude: ['token', 'password', 'created_at', 'updated_at', 'username', 'country_id', 'phone', 'email_verified', 'code_phone', 'email'] },
+      include: {
+        model: models.Tags,
+        as: 'interests',
+        through: { attributes: [] },
+        required: false,
+        where: {}
+      }
+    });
+    if (!user) throw new CustomError('Not found User', 404, 'Not Found');
+    return user;
+  }
+
 
   async findUserByEmailOr404(email) {
     if (!email) throw new CustomError('Email not given', 400, 'Bad Request')
@@ -81,6 +109,7 @@ class UsersService {
     return user
   }
 
+
   async updateUser(id, obj) {
     const transaction = await models.sequelize.transaction()
     try {
@@ -88,16 +117,16 @@ class UsersService {
       if (!user) throw new CustomError('Not found user', 404, 'Not Found')
       let updatedUser = await user.update(obj, { transaction })
 
-      if (obj.tags){
-        let arrayTags = obj.tags.split(',')
+      if (obj.interests) {
+        let arrayTags = obj.interests.split(',')
         let findedTags = await models.Tags.findAll({
-          where: {id: arrayTags},
+          where: { id: arrayTags },
           attributes: ['id'],
-          raw: true 
+          raw: true
         })
-        if (findedTags.length > 0){
+        if (findedTags.length > 0) {
           let tags_ids = findedTags.map(tag => tag['id'])
-          await user.addInterest(tags_ids)
+          await user.addInterests(tags_ids)
         }
       }
       await transaction.commit()
@@ -107,6 +136,7 @@ class UsersService {
       throw error
     }
   }
+
 
   async removeUser(id) {
     const transaction = await models.sequelize.transaction()
@@ -151,6 +181,7 @@ class UsersService {
     }
   }
 
+
   async verifiedTokenUser(id, token, exp) {
     const transaction = await models.sequelize.transaction()
     try {
@@ -177,6 +208,7 @@ class UsersService {
     }
   }
 
+
   async updatePassword(id, newPassword) {
     const transaction = await models.sequelize.transaction()
     try {
@@ -193,29 +225,36 @@ class UsersService {
   }
 
 
-
-
-  async findVotesByUser(userId, page = 1, pageSize = 10) {
+  async findVotesByUser(userId, query) {
     const filteredVotes = await models.Votes.findAll({
-      where: {user_id: userId},
+      where: { user_id: userId },
       attributes: ['publication_id']
     })
     const publicationsIds = filteredVotes.map(vote => vote.publication_id)
-    const results = await models.Publications.findAndCountAll({
+    const votes = await models.Publications.findAndCountAll({
       where: {
-        id:{
+        id: {
           [Op.in]: publicationsIds
         }
-      }
-    }) 
-    return results
-    // return {
-    //   page,
-    //   pageSize,
-    //   totalItems: totalVotes,
-    //   totalPages: Math.ceil(totalVotes / pageSize),
-    //   items: votes.map((vote) => vote.publication),
-    // };
+      },
+      include: [
+        { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
+        { model: models.PublicationsTypes, as: 'publication_type' },
+        { model: models.PublicationsImages, as: 'images' },
+      ],
+      attributes: {
+        // exclude: ['content'],
+        include: [
+          [cast(literal(
+            '(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'
+          ), 'integer'),
+            'votes_count'],
+        ]
+      },
+
+    })
+    return votes
   }
 
 
@@ -223,11 +262,11 @@ class UsersService {
     let transaction;
     try {
       transaction = await models.sequelize.transaction();
-      let tag = await models.Users.findOne({ where: { id } }, { transaction });
+      let tag = await models.User.findOne({ where: { id } }, { transaction });
       if (!tag) throw new Error('User not found');
-      await models.Users.update({ image_url }, { where: { id }, transaction });
+      await models.User.update({ image_url }, { where: { id }, transaction });
       await transaction.commit();
-      return { message: 'Image Added' };
+      return 'Image added successfully';
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;
@@ -235,82 +274,52 @@ class UsersService {
   }
 
 
-
-  async deleteImageFromUser(id) {
-    let transaction;
-    try {
-      transaction = await models.sequelize.transaction();
-      const user = await models.Users.findOne({ where: { id } }, { transaction });
-      if (!user) throw new Error('User not found');
-      const imageUrl = user.image_url;
-      await models.Users.update({ image_url: null }, { where: { id }, transaction });
-      await transaction.commit();
-      // Si deseas, también puedes eliminar la imagen del servidor utilizando el siguiente código:
-      // await deleteImageFromServer(imageUrl);
-      return { message: 'Image deleted' };
-    } catch (error) {
-      if (transaction) await transaction.rollback();
-      throw error;
-    }
-  }
-
-
-
-
-
-
-  async getUserByPublication(id, page = 1, filters = {}) {
-    const limit = 10; // Cantidad de publicaciones por página
-    const offset = (page - 1) * limit;
-
+  async findUserPublication(userId, query) {
     const options = {
-      where: { user_id: id },
+      where: { user_id: userId },
+      attributes: {
+        include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
+      },
       include: [
-        { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
-        { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.Tags, as: 'publication_tag', attributes: { exclude: ['created_at', 'updated_at'] } },
+        { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
+        { model: models.PublicationsTypes, as: 'publication_type' },
+        { model: models.PublicationsImages, as: 'images' },
       ],
-      limit,
-      offset,
       order: [['created_at', 'DESC']],
     };
 
-    if (filters.id) {
-      options.where.id = filters.id;
+    const { limit, offset } = query
+    if (limit && offset) {
+      options.limit = limit
+      options.offset = offset
+    }
+    const { id } = query
+    if (id) {
+      options.where.id = id;
+    }
+    const { title } = query
+    if (title) {
+      options.where.title = { [Op.iLike]: `%${title}%` };
+    }
+    const { description } = query
+    if (description) {
+      options.where.description = { [Op.iLike]: `%${description}%` };
+    }
+    const { content } = query
+    if (content) {
+      options.where.content = { [Op.iLike]: `%${content}%` };
+    }
+    const { reference_link } = query
+    if (reference_link) {
+      options.where.reference_link = { [Op.iLike]: `%${reference_link}%` };
     }
 
-    if (filters.title) {
-      options.where.title = { [Op.iLike]: `%${filters.title}%` };
-    }
+    const userPublications = await models.Publications.findAndCountAll(options);
 
-    if (filters.description) {
-      options.where.description = { [Op.iLike]: `%${filters.description}%` };
-    }
-
-    if (filters.content) {
-      options.where.content = { [Op.iLike]: `%${filters.content}%` };
-    }
-
-    if (filters.reference_link) {
-      options.where.reference_link = { [Op.iLike]: `%${filters.reference_link}%` };
-    }
-
-    const publications = await models.Publications.findAndCountAll(options);
-
-    if (publications.count === 0) throw new CustomError('Not found User', 404, 'Not Found');
-
-    const totalPages = Math.ceil(publications.count / limit);
-
-    return {
-      publications: publications.rows,
-      totalPages,
-    };
+    if (userPublications.count === 0) throw new CustomError('Not found User', 404, 'Not Found');
+    return userPublications
   }
-
-
-
 
 }
 
