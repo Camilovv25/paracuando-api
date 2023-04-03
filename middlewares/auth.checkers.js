@@ -11,8 +11,7 @@ const userService = new UsersServices();
 
 // checks if the user has admin role
 async function isAdminRole(req, res, next) {
-  const userId = req.user.id; // Obtener el ID del usuario de la petición
-  console.log(userId, 'here')
+  const userId = req.user.id; 
 
   try {
     const user = await authService.getAuthenticatedUser(userId);
@@ -21,11 +20,11 @@ async function isAdminRole(req, res, next) {
         error: {
           status: 403,
           message: 'User is not authorized to perform this action',
-          details: 'User does not have admin role' //Error while checking user roles
+          details: 'User does not have admin role' 
         }
       });
     }
-    req.user = user; // Agregar el usuario encontrado a la petición
+    req.user = user; 
     return next();
   } catch (error) {
     return res.status(403).json({
@@ -45,14 +44,13 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
   try {
     const authenticatedUser = await authService.getAuthenticatedUserFromRequest(req);
     const isAdmin = authenticatedUser.profiles && authenticatedUser.profiles.some(profile => profile.role.name === 'admin');
-    console.log('isAdmin:', isAdmin);
+
     if (isAdmin) {
       return next();
     }
 
     const user = await authService.getAuthenticatedUser(userId);
     const isCurrentUser = String(user.id) === String(authenticatedUser.id);
-    console.log('isCurrentUser:', isCurrentUser);
 
     if (isCurrentUser) {
       return next();

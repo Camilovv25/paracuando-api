@@ -393,7 +393,7 @@ test("Get One Tag - Public", async () => {
 
 test("Get One Tag - No Auth", async () => {
   const tagNoAuth = await request(app)
-    .get("/api/v1/tags/1")
+    .get("/api/v1/publications-types/1")
   
   expect(tagNoAuth.status).toBe(401);
 });
@@ -1145,7 +1145,7 @@ test("Add One Publication - Public", async () => {
       description: 'description anything',
       content: 'content anything',
       reference_link: 'www.academlo.com',
-      tags:'4'
+      tags:'4,2,6'
     })
   
   expect(addApublicationAsPublic.status).toBe(201);
