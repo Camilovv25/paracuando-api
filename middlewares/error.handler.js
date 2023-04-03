@@ -21,7 +21,7 @@ function logErrors(err, req, res, next) {
 
 function errorHandler(err, req, res, next) {
   let { status } = err;
-
+  console.log('----ESTE ES EL ERROR', err.message)
   return res.status(status || 500).json({
     message: err.message,
     errorName: err.name,
@@ -70,7 +70,7 @@ function ormErrorHandler(err, req, res, next) {
     err instanceof ConnectionTimedOutError ||
     err instanceof InvalidConnectionError
   ) {
-    console.log('----ESTE ES EL ERROR',err.message)
+    console.log('----ESTE ES EL ERROR', err.message)
     return res.status(409).json({
       statusCode: 409,
       name: err.name,
@@ -79,7 +79,7 @@ function ormErrorHandler(err, req, res, next) {
   }
 
   if (err instanceof ValidationError) {
-    console.log('----ESTE ES EL ERROR',err.message)
+    console.log('----ESTE ES EL ERROR', err.message)
     return res.status(409).json({
       statusCode: 409,
       name: err.name,
@@ -89,10 +89,10 @@ function ormErrorHandler(err, req, res, next) {
   }
 
   if (err instanceof QueryError ||
-      err instanceof UnknownConstraintError ||
-      err instanceof  AggregateError ||
-      err instanceof UniqueConstraintError) {
-    console.log('----ESTE ES EL ERROR',err.message)
+    err instanceof UnknownConstraintError ||
+    err instanceof AggregateError ||
+    err instanceof UniqueConstraintError) {
+    console.log('----ESTE ES EL ERROR', err.message)
     return res.status(409).json({
       statusCode: 409,
       name: err.name,
@@ -102,7 +102,7 @@ function ormErrorHandler(err, req, res, next) {
   }
 
   if (err instanceof EmptyResultError) {
-    console.log('----ESTE ES EL ERROR',err.message)
+    console.log('----ESTE ES EL ERROR', err.message)
     return res.status(409).json({
       statusCode: 409,
       name: err.name,
@@ -112,7 +112,7 @@ function ormErrorHandler(err, req, res, next) {
   }
 
   if (err instanceof DatabaseError) {
-    console.log('----ESTE ES EL ERROR',err.message)
+    console.log('----ESTE ES EL ERROR', err.message)
     return res.status(409).json({
       statusCode: err.status,
       name: err.name,
@@ -135,7 +135,7 @@ function ormErrorHandler(err, req, res, next) {
       parametros: err.parameters,
       // errorOriginal: err['original'],
       // sql: err['sql'],
-    //   stack: err.stack,
+      //   stack: err.stack,
     });
   }
 

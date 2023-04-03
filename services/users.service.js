@@ -1,6 +1,6 @@
 const { v4: uuid4 } = require('uuid');
 const models = require('../database/models')
-const { Op } = require('sequelize')
+const { Op, cast, literal } = require('sequelize')
 const { CustomError } = require('../utils/helpers');
 const { hashPassword } = require('../libs/bcrypt');
 
@@ -69,9 +69,18 @@ class UsersService {
   }
 
   async getUser(id) {
-    let user = await models.Users.findByPk(id)
-    if (!user) throw new CustomError('Not found User', 404, 'Not Found')
-    return user
+    let user = await models.Users.findByPk(id, {
+      attributes: { exclude: ['token', 'password', 'created_at', 'updated_at', 'username', 'country_id'] },
+      include: {
+        model: models.Tags,
+        as: 'interests',
+        through: { attributes: [] },
+        required: false,
+        where: {}
+      }
+    });
+    if (!user) throw new CustomError('Not found User', 404, 'Not Found');
+    return user;
   }
 
   async findUserByEmailOr404(email) {
@@ -88,16 +97,16 @@ class UsersService {
       if (!user) throw new CustomError('Not found user', 404, 'Not Found')
       let updatedUser = await user.update(obj, { transaction })
 
-      if (obj.interests){
+      if (obj.interests) {
         let arrayTags = obj.interests.split(',')
         let findedTags = await models.Tags.findAll({
-          where: {id: arrayTags},
+          where: { id: arrayTags },
           attributes: ['id'],
-          raw: true 
+          raw: true
         })
-        if (findedTags.length > 0){
+        if (findedTags.length > 0) {
           let tags_ids = findedTags.map(tag => tag['id'])
-          await user.addInterest(tags_ids)
+          await user.addInterests(tags_ids)
         }
       }
       await transaction.commit()
@@ -195,28 +204,36 @@ class UsersService {
 
 
 
-  async findVotesByUser(userId, page = 1, pageSize = 10) {
+  async findVotesByUser(userId, query) {
     const filteredVotes = await models.Votes.findAll({
-      where: {user_id: userId},
+      where: { user_id: userId },
       attributes: ['publication_id']
     })
     const publicationsIds = filteredVotes.map(vote => vote.publication_id)
-    const results = await models.Publications.findAndCountAll({
+    const votes = await models.Publications.findAndCountAll({
       where: {
-        id:{
+        id: {
           [Op.in]: publicationsIds
         }
       },
-      
-    }) 
-    return results
-    // return {
-    //   page,
-    //   pageSize,
-    //   totalItems: totalVotes,
-    //   totalPages: Math.ceil(totalVotes / pageSize),
-    //   items: votes.map((vote) => vote.publication),
-    // };
+      include: [
+        { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
+        { model: models.PublicationsTypes, as: 'publication_type' },
+        { model: models.PublicationsImages, as: 'images' },
+      ],
+      attributes: {
+        // exclude: ['content'],
+        include: [
+          [cast(literal(
+            '(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'
+          ), 'integer'),
+          'votes_count'],
+        ]
+      },
+
+    })
+    return votes
   }
 
 
@@ -235,46 +252,43 @@ class UsersService {
     }
   }
 
-  async getUserByPublication(query) {
-  // async getUserByPublication(id, page = 1, filters = {}) {
-    // const limit = 10; // Cantidad de publicaciones por página
-    // const offset = (page - 1) * limit;
+  async findUserPublication(userId, query) {
     const options = {
-      where: { user_id: id },
+      where: { user_id: userId },
+      attributes: {
+        include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
+      },
       include: [
-        { model: models.Users, as: 'user', attributes: { exclude: ['password', 'token', 'created_at', 'updated_at'] } },
-        { model: models.PublicationsTypes, as: 'publication_type', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.Cities, as: 'city', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.PublicationsImages, as: 'publication_image', attributes: { exclude: ['created_at', 'updated_at'] } },
-        { model: models.Tags, as: 'tags', attributes: { exclude: ['created_at', 'updated_at'] } },
+        { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
+        { model: models.PublicationsTypes, as: 'publication_type' },
+        { model: models.PublicationsImages, as: 'images' },
       ],
-      // limit,
-      // offset,
       order: [['created_at', 'DESC']],
     };
 
-    const {limit, offset} = query
+    const { limit, offset } = query
     if (limit && offset) {
       options.limit = limit
       options.offset = offset
     }
-    const {id} = query
+    const { id } = query
     if (id) {
       options.where.id = id;
     }
-    const {title} = query
+    const { title } = query
     if (title) {
       options.where.title = { [Op.iLike]: `%${title}%` };
     }
-    const {description} = query
+    const { description } = query
     if (description) {
       options.where.description = { [Op.iLike]: `%${description}%` };
     }
-    const {content} = query
+    const { content } = query
     if (content) {
       options.where.content = { [Op.iLike]: `%${content}%` };
     }
-    const {reference_link} = query
+    const { reference_link } = query
     if (reference_link) {
       options.where.reference_link = { [Op.iLike]: `%${reference_link}%` };
     }

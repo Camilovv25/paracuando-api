@@ -10,10 +10,10 @@ class PublicationsService {
     const options = {
       where: {},
       include: [
-        { model: models.Users, as: 'user', attributes:  ['first_name', 'last_name', 'image_url']},
-        { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
-        { model: models.PublicationsTypes, as:'publication_type'},
-        { model: models.PublicationsImages, as:'images'},
+        { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
+        { model: models.PublicationsTypes, as: 'publication_type' },
+        { model: models.PublicationsImages, as: 'images' },
       ],
       attributes: {
         // exclude: ['content'],
@@ -75,7 +75,7 @@ class PublicationsService {
     const { tags } = query
     if (tags) {
       const arrayTags = tags.split(',')
-      options.where['$tags.id$'] = {[Op.in]:arrayTags}
+      options.where['$tags.id$'] = { [Op.in]: arrayTags }
       //options.include[1].where.id = {[Op.in]:arrayTags}
     }
 
@@ -150,16 +150,16 @@ class PublicationsService {
 
 
   async getPublication(id) {
-    const publication = await models.Publications.findOne({
-      where: { id },
+    const publication = await models.Publications.findByPk(id, {
+      // where: { id },
       attributes: {
         include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
       },
       include: [
-        { model: models.Users, as: 'user', attributes:  ['first_name', 'last_name', 'image_url']},
-        { model: models.Tags, as:'tags', through:{attributes:[]}, required:false, where:{}},
-        { model: models.PublicationsTypes, as:'publication_type'},
-        { model: models.PublicationsImages, as:'images'},
+        { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
+        { model: models.PublicationsTypes, as: 'publication_type' },
+        { model: models.PublicationsImages, as: 'images' },
       ],
     });
     if (!publication) {
@@ -178,11 +178,19 @@ class PublicationsService {
   }
 
   async deletePublication(id) {
-    const publication = await models.Publications.destroy({ where: { id } });
-    if (!publication) {
-      throw new CustomError('Publication not found', 404, 'Not Found');
+    const transaction = await models.sequelize.transaction()
+    try {
+      const publication = await models.Publications.findByPk(id, { transaction })
+      if (!publication) {
+        throw new CustomError('Publication not found', 404, 'Not Found')
+      }
+      await publication.destroy({ transaction })
+      await transaction.commit()
+      return publication
+    } catch (error) {
+      await transaction.rollback()
+      throw error
     }
-    return publication;
   }
 
 

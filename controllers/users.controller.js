@@ -34,7 +34,7 @@ const addUser = async (request, response, next) => {
 const getUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const user = await usersService.getAuthUserOr404(id);
+    const user = await usersService.getUser(id);
     return res.json({ results: user });
   } catch (error) {
     next(error);
@@ -65,11 +65,14 @@ const removeUser = async (req, res, next) => {
 const getVotesByUser = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { page, size } = req.query;
+    const query = req.query
+    const { page = 1, size = 10 } = query;
     const { limit, offset } = getPagination(page, size);
-    const publications = await usersService.findVotesByUser(id, limit, offset);
+    query.limit = limit;
+    query.offset = offset
+    const publications = await usersService.findVotesByUser(id, query);
     const results = getPagingData(publications, page, limit)
-    return res.json(results);
+    return res.json({ results });
   } catch (error) {
     next(error);
   }
@@ -90,11 +93,12 @@ const addImageToUser = async (req, res, next) => {
 const getUserPublications = async (req, res, next) => {
   try {
     const query = req.query
-    const { page , size } = query;
+    const { id } = req.params
+    const { page, size } = query;
     const { limit, offset } = getPagination(page, size);
     query.limit = limit
     query.offset = offset
-    const users = await usersService.getUserByPublication(query);
+    const users = await usersService.findUserPublication(id, query);
 
     const results = getPagingData(users, page, limit);
 

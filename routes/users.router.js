@@ -9,7 +9,7 @@ router.route('/')
   .get(isAdminRole, getUsers)
 
 router.route('/:id')
-  .get(isAdminOrSameUserOrAnyUser, getUser)
+  .get(getUser)
   .put(isTheSameUserUpdated, updateUser)
 
 router.route('/:id/votes')

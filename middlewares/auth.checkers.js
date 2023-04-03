@@ -12,7 +12,6 @@ async function isAdminRole(req, res, next) {
   const userId = req.user.id; // Obtener el ID del usuario de la petición
   console.log(userId, 'here')
 
-
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
@@ -27,7 +26,7 @@ async function isAdminRole(req, res, next) {
     req.user = user; // Agregar el usuario encontrado a la petición
     return next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
         message: 'User is not authorized to perform this action'
       }
@@ -36,7 +35,7 @@ async function isAdminRole(req, res, next) {
 }
 
 
-
+/*
 // checks if the user has admin role, is the same user or is any authenticated user. 
 async function isAdminOrSameUserOrAnyUser(req, res, next) {
   const userId = req.params.id;
@@ -52,10 +51,11 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
 
 
     let filteredUserInfo = {
+      id: user.id,
       first_name: user.first_name,
       last_name: user.last_name,
       image_url: user.image_url,
-      interest: user.interest
+      interests: user.interests
     };
 
     if (isAdmin || isCurrentUser) {
@@ -65,35 +65,33 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,
-        username: user.username,
         email_verified: user.email_verified,
         code_phone: user.code_phone,
         phone: user.phone,
-        country_id: user.country_id,
         image_url: user.image_url,
-        created_at: user.created_at,
-        updated_at: user.updated_at,
-        interest: user.interest
+        interests: user.interests
       };
     } else {
       filteredUserInfo = {
+        id: user.id,
         first_name: user.first_name,
         last_name: user.last_name,
-        image_url: user.image_url
+        image_url: user.image_url,
+        interests: user.interests
       };
     }
 
     return res.json(filteredUserInfo);
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
-        status: 401,
+        status: 403,
         message: 'User is not authorized to perform this action',
       }
     });
   }
 }
-
+*/
 
 
 //check if the user has admin role or is the same user who created the publication, to allow deleting a publication.
@@ -151,7 +149,7 @@ function isTheSameUserUpdated(req, res, next) {
       'country_id',
       'code_phone',
       'phone',
-      'interests'
+      'tags'
     ];
     const fieldsToUpdate = Object.keys(req.body);
 
@@ -239,7 +237,7 @@ async function isAdminUpdate(req, res, next) {
 
     next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
         message: 'User is not authorized to perform this action'
       }
@@ -281,7 +279,7 @@ async function isAdminCreateTag(req, res, next) {
 
     next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
         message: 'User is not authorized to perform this action'
       }
@@ -298,9 +296,9 @@ async function isAdminAddImage(req, res, next) {
   try {
     const user = await authService.getAuthenticatedUser(userId);
     if (!user.profiles || !user.profiles.length || user.profiles[0].role.name !== 'admin') {
-      return res.status(401).json({
+      return res.status(403).json({
         error: {
-          status: 401,
+          status: 403,
           message: 'User is not authorized to perform this action',
           details: 'User does not have admin role'
         }
@@ -323,7 +321,7 @@ async function isAdminAddImage(req, res, next) {
 
     next();
   } catch (error) {
-    return res.status(401).json({
+    return res.status(403).json({
       error: {
         message: 'User is not authorized to perform this action'
       }
@@ -335,7 +333,7 @@ async function isAdminAddImage(req, res, next) {
 
 module.exports = {
   isAdminRole,
-  isAdminOrSameUserOrAnyUser,
+  //isAdminOrSameUserOrAnyUser,
   isAdminUpdate,
   isAdminCreateTag,
   isAdminAddImage,
