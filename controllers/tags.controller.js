@@ -44,7 +44,7 @@ const addImageToTag = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { image_url } = req.body;
-    const result = await tagsService.addImageToTag({ id, image_url });
+    const result = await tagsService.findTagImage({ id, image_url });
     return res.status(201).json({ message: 'Image Added' });
   } catch (error) {
     next(error);

@@ -71,8 +71,8 @@ async function isAdminOrSameUserOrAnyUser(req, res, next) {
 
 
 
-//check if the user has admin role or is the same user who created the publication, to allow deleting a publication.
-async function isAdminOrSameUser(req, res, next) {
+//checks if the user has administrator role or is the same user who created the publication, to allow access to the methods of the Publications path.
+async function isAdminOrSameUserToAccessPublication(req, res, next) {
   const publicationId = req.params.id;
   const userId = req.user.id;
 
@@ -103,6 +103,53 @@ async function isAdminOrSameUser(req, res, next) {
     });
   }
 }
+
+
+function isTheSameUser(req, res, next) {
+  if (req.user && (req.user.id === req.params.id)) {
+    next();
+  } else {
+    res.status(403).json({
+      error: {
+        status: 403,
+        message: 'User is not authorized to perform this action',
+        details: 'User is not the same user'
+      }
+    });
+  }
+}
+
+async function isAdminOrSameUser(req, res, next) {
+  try {
+    const authenticatedUser = await authService.getAuthenticatedUserFromRequest(req);
+
+    if (req.user && (req.user.id === req.params.id)) {
+      return next();
+    }
+
+    const isAdmin = authenticatedUser.profiles && authenticatedUser.profiles.some(profile => profile.role.name === 'admin');
+
+    if (isAdmin) {
+      return next();
+    }
+
+    return res.status(403).json({
+      error: {
+        status: 403,
+        message: 'User is not authorized to perform this action',
+      }
+    });
+
+  } catch (error) {
+    return res.status(403).json({
+      error: {
+        status: 403,
+        message: 'User is not authorized to perform this action',
+      }
+    });
+  }
+}
+
 
 
 
@@ -306,5 +353,7 @@ module.exports = {
   isAdminCreateTag,
   isAdminAddImage,
   isTheSameUserForUpdate,
+  isAdminOrSameUserToAccessPublication,
+  isTheSameUser,
   isAdminOrSameUser
 };

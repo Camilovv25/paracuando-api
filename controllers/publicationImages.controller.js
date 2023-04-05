@@ -106,3 +106,8 @@ const removePublicationImage = async (request, response, next) => {
     next(error)
   }
 }
+
+module.exports = {
+  uploadImagePublication,
+  removePublicationImage
+};

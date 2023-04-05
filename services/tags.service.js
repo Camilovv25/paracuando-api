@@ -87,22 +87,20 @@ class TagsService {
 
 
 
-  async addImageToTag({ id, image_url }) {
+  async findTagImage({ id, image_url }) {
     let transaction;
     try {
       transaction = await models.sequelize.transaction();
       let tag = await models.Tags.findOne({ where: { id } }, { transaction });
       if (!tag) throw new Error('Tag not found');
-      await models.Tags.update({ image_url }, { where: { id }, transaction });
+      const tagImage = await models.Tags.update({ image_url }, { where: { id }, transaction });
       await transaction.commit();
-      return { message: 'Image Added' };
+      return tagImage;
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;
     }
   }
-
-
 
 
 

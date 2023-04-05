@@ -258,20 +258,43 @@ class UsersService {
   }
 
 
-  async addImageToUser({ id, image_url }) {
+  async findUserImage({ id, image_url }) {
     let transaction;
     try {
       transaction = await models.sequelize.transaction();
-      let tag = await models.User.findOne({ where: { id } }, { transaction });
-      if (!tag) throw new Error('User not found');
-      await models.User.update({ image_url }, { where: { id }, transaction });
+      let user = await models.Users.findOne({ where: { id } }, { transaction });
+      if (!user) throw new Error('User not found');
+      const addImage = await models.Users.update({ image_url }, { where: { id }, transaction });
       await transaction.commit();
-      return 'Image added successfully';
+      return addImage;
     } catch (error) {
       if (transaction) await transaction.rollback();
       throw error;
     }
   }
+
+  async removeUserImage({ id }) {
+    let transaction;
+    try {
+      transaction = await models.sequelize.transaction();
+      let user = await models.Users.findOne({ where: { id } }, { transaction });
+      if (!user) throw new Error('User not found');
+
+      if (user.image_url) {
+
+        const removeImage = await models.Users.update({ image_url: null }, { where: { id }, transaction });
+        await transaction.commit();
+        return removeImage;
+      } else {
+
+        throw new Error('User does not have an image');
+      }
+    } catch (error) {
+      if (transaction) await transaction.rollback();
+      throw error;
+    }
+  }
+
 
 
   async findUserPublication(userId, query) {
