@@ -38,12 +38,13 @@ class PublicationImagesService {
       await transaction.rollback();
       throw error;
     }
-  }
 
+  }
   async getImageOr404(publication_id, order) {
     const publicationImage = await models.PublicationsImages.findOne({ where: { publication_id, order: parseInt(order) } });
     if (!publicationImage) throw new CustomError('Not Found Publication Image with this order', 404, 'Not Found');
     return publicationImage
+
   }
 
   async removeImage(publication_id, order) {

@@ -1,5 +1,7 @@
 const UsersService = require('../services/users.service');
 const { getPagination, getPagingData } = require('../utils/helpers');
+const { uploadFile, deleteFile, unlinkFile } = require('../libs/aws')
+const { CustomError } = require('../utils/helpers')
 
 
 const usersService = new UsersService();
@@ -82,22 +84,57 @@ const getVotesByUser = async (req, res, next) => {
 };
 
 
-const addImageToUser = async (req, res, next) => {
+const uploadImageUser = async (req, res, next) => {
+  const { id } = req.params;
+  const file = req.file; 
+
   try {
-    const { id } = req.params; 
-    const { image_url } = req.body; 
-    await usersService.findUserImage({ id, image_url }); 
-    return res.status(200).json({ message: 'Image Added' });
+    if (!file) throw new CustomError('No image received', 400, 'Bad Request'); 
+
+    let fileKey = `public/tags/images/user-${id}`; 
+
+    if (file.mimetype === 'image/png') {
+      fileKey += '.png';
+    } else if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+      fileKey += '.jpeg';
+    } else {
+      throw new CustomError('Invalid image format', 400, 'Bad Request'); 
+    }    
+
+    await uploadFile(file, fileKey); 
+
+    const bucketURL = process.env.AWS_DOMAIN + fileKey; 
+
+    const result = await usersService.findUserImage({ id, image_url: bucketURL });
+
+    return res.status(201).json({ message: 'Image Added' });
   } catch (error) {
-    next(error); 
+    if (file) {
+      try {
+        await unlinkFile(file.path);
+      } catch (error) {
+        //
+      }
+    }
+    next(error);
   }
 };
 
+
 const deleteUserImage = async (req, res, next) => {
+  
+  const { id } = req.params;
+
   try {
-    const { id } = req.params;
-    const result = await usersService.removeUserImage({ id });
-    return res.status(200).json({ message: 'Image Removed' });
+    let { image_url } = await usersService.removeUserImage({ id });
+
+    let awsDomain = process.env.AWS_DOMAIN
+    const imageKey = image_url.replace(awsDomain, '')
+    await deleteFile(imageKey)
+
+    let userImage = await usersService.removeUserImage({ id });
+
+    return res.status(200).json({ message: 'Image Removed'});
   } catch (error) {
     next(error);
   }
@@ -131,7 +168,7 @@ module.exports = {
   updateUser,
   removeUser,
   getVotesByUser,
-  addImageToUser,
+  uploadImageUser,
   deleteUserImage,
   getUserPublications
 };

@@ -143,7 +143,11 @@ class UsersService {
     try {
       let user = await models.Users.findByPk(id)
       if (!user) throw new CustomError('Not found user', 404, 'Not Found')
+
+      if (user.image_url) throw new CustomError('Image User is on Cloud, must be deleted first', 400, 'Bad Request')
+
       await user.destroy({ transaction })
+      
       await transaction.commit()
       return user
     } catch (error) {

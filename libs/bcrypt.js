@@ -2,7 +2,6 @@ const bcrypt = require('bcrypt')
 const { CustomError } = require('../utils/helpers')
 
 const hashPassword = (plainPassword) => {
-  console.log('plainPassword in hashPassword:', plainPassword);
   if (!plainPassword) {
     throw new CustomError('Password not provided for hash', 400, 'Bad Request')
   }
@@ -10,8 +9,6 @@ const hashPassword = (plainPassword) => {
 }
 
 const comparePassword = (plainPassword, hashedPassword) => {
-  console.log('plainPassword in comparePassword:', plainPassword);
-  console.log('hashedPassword in comparePassword:', hashedPassword);
   if (!plainPassword) {
     throw new CustomError('Password not provided for compare', 400, 'Bad Request')
   }

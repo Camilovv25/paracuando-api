@@ -1,7 +1,9 @@
 const router = require('express').Router();
 
-const { getUsers, getUser, updateUser, getVotesByUser, getUserPublications, addImageToUser, deleteUserImage  } = require('../controllers/users.controller');
+const { getUsers, getUser, updateUser, getVotesByUser, getUserPublications, uploadImageUser, deleteUserImage  } = require('../controllers/users.controller');
 const { isAdminRole, isTheSameUserForUpdate, isAdminOrSameUserOrAnyUser, isTheSameUser, isAdminOrSameUser } = require('../middlewares/auth.checkers');
+
+const { multerPublicationsPhotos } = require('../middlewares/multer.middleware');
 
 
 
@@ -19,7 +21,7 @@ router.route('/:id/publications')
   .get(getUserPublications)
 
 router.route('/:id/add-image')
-  .post(isTheSameUser, addImageToUser)
+  .post(isTheSameUser, multerPublicationsPhotos.array('image', 1), uploadImageUser)
 
 router.route('/:id/remove-image')
   .delete(isAdminOrSameUser, deleteUserImage)

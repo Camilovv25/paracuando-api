@@ -1,7 +1,9 @@
 const router = require('express').Router();
 
-const {getTags, getTag, createTag, updateTag, deleteTag, addImageToTag} = require ('../controllers/tags.controller');
+const {getTags, getTag, createTag, updateTag, deleteTag, uploadImageTag} = require ('../controllers/tags.controller');
 const { isAdminCreateTag, isAdminAddImage, isAdminUpdate, isAdminRole } = require ('../middlewares/auth.checkers');
+
+const { multerPublicationsPhotos } = require('../middlewares/multer.middleware');
 
 
 
@@ -15,7 +17,7 @@ router.route('/:id')
   .delete(isAdminRole, deleteTag)
 
 router.route('/:id/add-image')
-  .post(isAdminAddImage, addImageToTag)
+  .post(isAdminAddImage, multerPublicationsPhotos.array('image', 1), uploadImageTag)
 
 
 module.exports = router 

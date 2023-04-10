@@ -42,7 +42,22 @@ const deleteFile = (fileName) => {
 }
 
 
+//Returns a Promise
+const unlinkFile = (filePath) => {
+  return new Promise((resolve, reject) => {
+    fs.unlink(filePath, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+};
+
+
 module.exports = {
   uploadFile,
   deleteFile,
+  unlinkFile
 }

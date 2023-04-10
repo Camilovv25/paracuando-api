@@ -86,7 +86,6 @@ class TagsService {
 
 
 
-
   async findTagImage({ id, image_url }) {
     let transaction;
     try {
@@ -108,8 +107,12 @@ class TagsService {
     const transaction = await models.sequelize.transaction();
     try {
       let tag = await models.Tags.findByPk(id, { transaction });
-      if (!tag) throw new CustomError('Not fount Tag', 404, 'NotFound');
+      if (!tag) throw new CustomError('Not found Tag', 404, 'Not Found')
+
+      if (tag.image_url) throw new CustomError('Image Tag is on Cloud, must be deleted first', 400, 'Bad Request')
+
       await models.Tags.destroy({ where: { id } }, { transaction });
+      
       await transaction.commit();
       return tag;
     } catch (error) {
@@ -118,5 +121,6 @@ class TagsService {
     }
   }
 }
+
 
 module.exports = TagsService

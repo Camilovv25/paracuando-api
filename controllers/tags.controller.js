@@ -1,5 +1,7 @@
 const TagsService = require('../services/tags.service');
 const {getPagination, getPagingData} = require ('../utils/helpers');
+const { uploadFile, deleteFile, unlinkFile } = require('../libs/aws')
+const { CustomError } = require('../utils/helpers')
 
 const tagsService = new TagsService();
 
@@ -40,16 +42,42 @@ const createTag = async (req, res, next) => {
 
 
 
-const addImageToTag = async (req, res, next) => {
+const uploadImageTag = async (req, res, next) => {
+  const { id } = req.params;
+  const file = req.file; 
+
   try {
-    const { id } = req.params;
-    const { image_url } = req.body;
-    const result = await tagsService.findTagImage({ id, image_url });
+    if (!file) throw new CustomError('No image received', 400, 'Bad Request'); 
+
+    let fileKey = `public/tags/images/tag-${id}`; 
+    
+    if (file.mimetype === 'image/png') {
+      fileKey += '.png';
+    } else if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/jpg') {
+      fileKey += '.jpeg';
+    } else {
+      throw new CustomError('Invalid image format', 400, 'Bad Request'); 
+    }
+
+    await uploadFile(file, fileKey); 
+
+    const bucketURL = process.env.AWS_DOMAIN + fileKey; 
+
+    const result = await tagsService.findTagImage({ id, image_url: bucketURL });
+
     return res.status(201).json({ message: 'Image Added' });
   } catch (error) {
+    if (file) {
+      try {
+        await unlinkFile(file.path);
+      } catch (error) {
+        //
+      }
+    }
     next(error);
   }
 };
+
 
 const updateTag = async (req, res, next) => {
   try {
@@ -63,16 +91,30 @@ const updateTag = async (req, res, next) => {
 };
 
 
-const deleteTag = async(req, res, next) => {
-  try{
-    const {id} = req.params
+const deleteTag = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const tag = await tagsService.findTagById(id);
+    if (!tag) {
+      return res.status(404).json({ message: 'Tag not found' });
+    }
+
+    if (tag.image_url) {
+      let awsDomain = process.env.AWS_DOMAIN;
+      const imageKey = tag.image_url.replace(awsDomain, '');
+
+      await deleteFile(imageKey);
+    }
+
     const tagRemoved = await tagsService.removeTag(id);
-    // return res.json({message: 'Tag Removed' });
-    return res.json({message: 'removed', results:tagRemoved});
+
+    return res.json({ message: 'removed', results: tagRemoved });
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
+
 
 module.exports = { 
   getTags,
@@ -80,5 +122,5 @@ module.exports = {
   createTag,
   updateTag,
   deleteTag,
-  addImageToTag
+  uploadImageTag
 }

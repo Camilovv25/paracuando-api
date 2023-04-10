@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const PublicationImagesService = require('../services/publicationImages.service');
 //const { getPagination, getPagingData } = require('../utils/helpers');
-const {   uploadFile, deleteFile } = require('../libs/aws')
+const { uploadFile, deleteFile, unlinkFile } = require('../libs/aws')
 const { CustomError } = require('../utils/helpers')
 
 const publicationImagesService = new PublicationImagesService();
@@ -63,7 +63,7 @@ const uploadImagePublication = async (request, response, next) => {
     await Promise.all(
       files.map(async (file) => {
         try {
-          //await unlinkFile(file.path);
+          await unlinkFile(file.path);
         } catch (error) {
           //
         }
@@ -79,7 +79,7 @@ const uploadImagePublication = async (request, response, next) => {
       await Promise.all(
         files.map(async (file) => {
           try {
-            //await unlinkFile(file.path);
+            await unlinkFile(file.path);
           } catch (error) {
             //
           }
