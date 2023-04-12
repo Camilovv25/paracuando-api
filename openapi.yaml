@@ -20,11 +20,10 @@ paths:
     post:
       tags:
       - Auth
-      summary: Register an user
-      description: The user registers, an association of Profiles with the role of
-        public is automatically created
+      summary: Registro
+      description: El usuario se registra 
       requestBody:
-        description: User object that needs to be registered
+        description: Objeto de usuario para el registro
         content:
           '*/*':
             schema:
@@ -48,9 +47,8 @@ paths:
     post:
       tags:
       - Auth
-      summary: Log an user
-      description: The user sends the email and his password to be able to receive
-        a token with which he will make requests based on his ID
+      summary: Login
+      description: El usuario obtiene el token para empezar a hacer peticiones 
       requestBody:
         content:
           application/json:
@@ -80,9 +78,8 @@ paths:
     get:
       tags:
       - Auth
-      summary: Get personal profiles
-      description: The user with his token will receive the Profiles associated with
-        his account.
+      summary: Información de usuario logueado
+      description: En base al token proporcionado como usuario autenticado en los headers, regresa informacion de este usuario.
       parameters:
       - name: bearer token
         in: header
@@ -127,6 +124,8 @@ paths:
     post:
       tags:
       - Auth
+      summary: Reset password petition
+      description: El usuario setea un token en la BD para poder cambiar su contraseña, el token tiene expiración.
       requestBody:
         content:
           '*/*':
@@ -152,9 +151,8 @@ paths:
     post:
       tags:
       - Auth
-      summary: Change password
-      description: The token is sent along with the password for the password change
-        to take place
+      summary: Cambiar contraseña 
+      description: El usuario envia su contraseña junto con el token proporcionado al email para poder reestablecer su contraseña 
       requestBody:
         content:
           '*/*':
@@ -446,6 +444,8 @@ paths:
       responses:
         200:
           description: Vista paginada de los resultados 
+      security: 
+        - BearerAuth: []
     post:
       tags: 
         - Publications
@@ -485,6 +485,8 @@ paths:
       responses:
         200:
           description: Publicación encontrada
+      security: 
+        - BearerAuth: []
     delete:
       tags: 
         - Publications
