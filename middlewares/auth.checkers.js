@@ -320,19 +320,19 @@ async function isAdminAddImage(req, res, next) {
       });
     }
 
-    const { image_url } = req.body;
-    if (!image_url) {
-      return res.status(400).json({
-        error: {
-          status: 400,
-          message: 'Missing fields',
-          details: 'The following fields are required: image_url',
-          fields: {
-            image_url: 'String'
-          }
-        }
-      });
-    }
+    // const { image_url } = req.body;
+    // if (!image_url) {
+    //   return res.status(400).json({
+    //     error: {
+    //       status: 400,
+    //       message: 'Missing fields',
+    //       details: 'The following fields are required: image_url',
+    //       fields: {
+    //         image_url: 'String'
+    //       }
+    //     }
+    //   });
+    // }
 
     next();
   } catch (error) {
