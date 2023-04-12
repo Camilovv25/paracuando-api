@@ -9,7 +9,7 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "test": "jest --detectOpenHandles",
-    "pretest":"npx sequelize-cli db:drop --env test && npx sequelize-cli db:create --env test && npx sequelize-cli db:migrate --env test && npx sequelize-cli db:seed:all --env test --seeders-path tests/seeders"
+    "pretest": "npx sequelize-cli db:drop --env test && npx sequelize-cli db:create --env test && npx sequelize-cli db:migrate --env test && npx sequelize-cli db:seed:all --env test --seeders-path tests/seeders"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +25,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.0",
     "passport": "^0.6.0",
+    "passport-anonymous": "^1.0.1",
     "passport-jwt": "^4.0.1",
     "pg": "^8.9.0",
     "pg-hstore": "^2.3.4",

@@ -13,15 +13,15 @@ const { multerPublicationsPhotos } = require('../middlewares/multer.middleware')
 
 
 const auth = passport.authenticate('jwt', { session: false })
-
+const authOrAnon = passport.authenticate(['jwt', 'anonymous'], { session: false })
 
 
 router.route('/')
-  .get(getPublications)
+  .get(authOrAnon, getPublications)
   .post(auth, addPublication)
 
 router.route('/:id')
-  .get(getPublication)
+  .get(authOrAnon, getPublication)
   .delete(auth, isAdminOrSameUserToAccessPublication, removePublication)
 
 router.route('/:id/vote')

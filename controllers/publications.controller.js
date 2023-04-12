@@ -6,18 +6,25 @@ const publicationsService = new PublicationsService();
 
 const getPublications = async (req, res, next) => {
   try {
+    const user = req.user
     const query = req.query
     const { page, size } = query;
 
-    const { limit, offset } = getPagination(page, size);
+    const { limit, offset } = getPagination(page, size, '10');
     query.limit = limit
     query.offset = offset
 
-    const publications = await publicationsService.findAndCount(query);
+    if (!user) {
+      let publications = await publicationsService.findAndCount(query, null)
+      const results = getPagingData(publications, page, limit)
+      return res.json({ results: results })
+    }
+
+    let publications = await publicationsService.findAndCount(query, user.id);
 
     const results = getPagingData(publications, page, limit);
 
-    return res.json({ results });
+    return res.json({ results: results });
   } catch (error) {
     next(error);
   }
@@ -39,8 +46,16 @@ const addPublication = async (req, res, next) => {
 
 const getPublication = async (req, res, next) => {
   try {
+    const user = req.user
     const { id } = req.params;
-    const publication = await publicationsService.getPublication(id);
+
+    if (!user) {
+      let publication = await publicationsService.getPublication(id, null)
+      return res.json({ results: publication })
+    }
+
+    let publication = await publicationsService.getPublication(id, user.id);
+    
     return res.json({ results: publication });
   } catch (error) {
     next(error);

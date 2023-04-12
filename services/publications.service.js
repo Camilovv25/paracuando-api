@@ -6,17 +6,16 @@ const uuid = require('uuid')
 class PublicationsService {
   constructor() { }
 
-  async findAndCount(query) {
+  async findAndCount(query, user_id) {
     const options = {
       where: {},
       include: [
         { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
-        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
         { model: models.PublicationsTypes, as: 'publication_type' },
         { model: models.PublicationsImages, as: 'images' },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
       ],
       attributes: {
-        // exclude: ['content'],
         include: [
           [cast(literal(
             '(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'
@@ -33,14 +32,18 @@ class PublicationsService {
       options.offset = offset;
     }
 
-    const { id } = query;
-    if (id) {
-      options.where.id = id;
-    }
-
-    const { user_id } = query;
     if (user_id) {
-      options.where.user_id = user_id;
+      options.include.push({
+        model: models.Users,
+        as: 'same_vote',
+        where: { id: user_id },
+        attributes: ['id', 'first_name', 'last_name'],
+        required: false,
+        through: {
+          where: { user_id },
+          attributes: []
+        }
+      })
     }
 
     const { city_id } = query;
@@ -50,7 +53,8 @@ class PublicationsService {
 
     const { publication_type_id } = query;
     if (publication_type_id) {
-      options.where.publication_type_id = publication_type_id;
+      let publication_type_id = publication_type_id.split(',')
+      options.where.publication_type_id = publication_type_id
     }
 
     const { title } = query;
@@ -68,15 +72,29 @@ class PublicationsService {
       options.where.content = { [Op.iLike]: `%${content}%` };
     }
 
+    const { created_at } = query
+    if (created_at) {
+      options.where.created_at = { [Op.lte]: new Date(created_at) }
+    }
+
     const { reference_link } = query;
     if (reference_link) {
       options.where.reference_link = { [Op.iLike]: `%${reference_link}%` };
     }
-    const { tags } = query
+
+    const { tags } = query;
     if (tags) {
-      const arrayTags = tags.split(',')
-      options.where['$tags.id$'] = { [Op.in]: arrayTags }
-      //options.include[1].where.id = {[Op.in]:arrayTags}
+      let tagsIDs = tags.split(',')
+      options.include.push({
+        model: models.Tags,
+        as: 'filtered_tags',
+        required: true,
+        where: { id: tagsIDs },
+        attributes: { exclude: ['created_at', 'updated_at', 'description'] },
+        through: {
+          attributes: []
+        }
+      })
     }
 
     const { votes_count } = query;
@@ -90,7 +108,7 @@ class PublicationsService {
     }
 
     options.distinct = true
-    
+
     const publications = await models.Publications.findAndCountAll(options);
     return publications;
   }
@@ -155,25 +173,42 @@ class PublicationsService {
   }
 
 
-  async getPublication(id) {
-    const publication = await models.Publications.findByPk(id, {
-      // where: { id },
+  async getPublication(id, user_id) {
+    let options = { 
       attributes: {
         include: [[cast(literal('(SELECT COUNT(*) FROM "votes" WHERE "votes"."publication_id" = "Publications"."id")'), 'integer'), 'votes_count']]
       },
       include: [
         { model: models.Users, as: 'user', attributes: ['first_name', 'last_name', 'image_url'] },
-        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
         { model: models.PublicationsTypes, as: 'publication_type' },
         { model: models.PublicationsImages, as: 'images' },
+        { model: models.Tags, as: 'tags', through: { attributes: [] }, required: false, where: {} },
       ],
-    });
+    };
+
+    if (user_id) {
+      options.include.push({
+        model: models.Users,
+        as: 'same_vote',
+        where: { id: user_id },
+        attributes: ['id', 'first_name', 'last_name'],
+        required: false,
+        through: {
+          where: { user_id },
+          attributes: []
+        }
+      })
+    }
+
+    const publication = await models.Publications.findByPk(id, options);   
+
     if (!publication) {
       throw new CustomError('Publication not found', 404, 'Not Found');
     }
     return publication;
   }
 
+  
   async updatePublication(id, obj) {
     let publication = await models.Publications.findByPk(id);
     if (!publication) {
